@@ -7,28 +7,25 @@
 
 import Foundation
 
-class WeatherManager {
-    func weather(for city: String) -> Double? {
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=kladno&appid=40e20e4c03043747c438b85bdd9cd808&units=metric")
-        
-        var returnTemp: Double?
-        
-        URLSession.shared.dataTask(with: url!) {
+class WeatherManager: ObservableObject {
+    @Published var currentLocationTemp: String = "Loading"
+    
+    func weather(for city: String) {
+        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(city)&appid=40e20e4c03043747c438b85bdd9cd808&units=metric")
+        let networkTask: URLSessionDataTask = URLSession.shared.dataTask(with: url!) {
             (data, response, error) in
-            
             guard let data = data else { return }
-            
-            let dataAsString = String(data: data, encoding: .utf8)
-            print(dataAsString!)
-            
             do {
                 let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
-                returnTemp = decoded.main.temp
+                print("Temperature at \(city): \(decoded.main.temp)")
+                DispatchQueue.main.async {
+                    self.currentLocationTemp = String(describing: decoded.main.temp)
+                    self.objectWillChange.send()
+                }
             } catch {
                 print(error.localizedDescription)
             }
-        }.resume()
-        
-        return returnTemp
+        }
+        networkTask.resume()
     }
 }

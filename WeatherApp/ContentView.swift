@@ -9,22 +9,21 @@ import SwiftUI
 import Foundation
 
 struct ContentView: View {
-    
+    @ObservedObject var weatherManager: WeatherManager = WeatherManager()
     
     var body: some View {
-        Text("Hello, world!")
-            .padding()
-            .onAppear{
-//                let url = URL(string: "https://api.letsbuildthatapp.com/jsondecodable/course")
-                let weatherTemp = WeatherManager().weather(for: "kladno")
-                print(weatherTemp ?? "No Data")
+        Text("\(self.weatherManager.currentLocationTemp)")
+        .padding()
+        .onAppear{
+            DispatchQueue.main.async {
+                weatherManager.weather(for: "prague")
             }
+        }
     }
-    
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        ContentView(weatherManager: WeatherManager())
     }
 }
