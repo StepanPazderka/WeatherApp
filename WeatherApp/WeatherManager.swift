@@ -8,7 +8,7 @@
 import Foundation
 
 class WeatherManager: ObservableObject {
-    var key = Config().key
+    var key = Config.key
     @Published var currentLocationTemp: String = ""
     
     func weather(for city: String) {
