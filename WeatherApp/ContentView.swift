@@ -10,15 +10,20 @@ import Foundation
 
 struct ContentView: View {
     @ObservedObject var weatherManager: WeatherManager = WeatherManager()
+    @State var city: String = "prague"
     
     var body: some View {
+        TextField("Pick city to show", text: $city, onEditingChanged: { (changed) in
+            weatherManager.weather(for: city)
+        })
         Text("\(self.weatherManager.currentLocationTemp)")
         .padding()
         .onAppear{
             DispatchQueue.main.async {
-                weatherManager.weather(for: "prague")
+                weatherManager.weather(for: city)
             }
         }
+        
     }
 }
 

@@ -1,20 +1,47 @@
 
 import Foundation
 
+enum ChangeableType: Codable {
+    func encode(to encoder: Encoder) throws {
+        
+    }
+    
+    case double(Double), string(String)
+    
+    init(from decoder: Decoder) throws {
+        if let double = try? decoder.singleValueContainer().decode(Double.self) {
+            self = .double(double)
+            return
+        }
+        
+        if let string = try? decoder.singleValueContainer().decode(String.self) {
+            self = .string(string)
+            return
+        }
+        
+        throw ChangeableType.missingValue
+    }
+    
+    enum ChangeableType: Error {
+        case missingValue
+    }
+}
+
 // MARK: - Welcome
 struct WeatherData: Codable {
-    let coord: Coord
-    let weather: [Weather]
-    let base: String
-    let main: Main
-    let visibility: Int
-    let wind: Wind
-    let clouds: Clouds
-    let dt: Int
-    let sys: Sys
-    let timezone, id: Int
-    let name: String
-    let cod: Int
+    let coord: Coord?
+    let weather: [Weather]?
+    let base: String?
+    let main: Main?
+    let visibility: Int?
+    let wind: Wind?
+    let clouds: Clouds?
+    let dt: Int?
+    let sys: Sys?
+    let timezone, id: Int?
+    let name: String?
+    let cod: ChangeableType
+    let message: String?
 }
 
 // MARK: - Clouds
@@ -30,7 +57,7 @@ struct Coord: Codable {
 // MARK: - Main
 struct Main: Codable {
     let temp, feelsLike: Double
-    let tempMin: Int
+    let tempMin: Double
     let tempMax: Double
     let pressure, humidity: Int
 
