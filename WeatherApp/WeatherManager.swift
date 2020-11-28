@@ -8,10 +8,11 @@
 import Foundation
 
 class WeatherManager: ObservableObject {
-    @Published var currentLocationTemp: String = "Loading"
+    var key = Config().key
+    @Published var currentLocationTemp: String = ""
     
     func weather(for city: String) {
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(city)&appid=40e20e4c03043747c438b85bdd9cd808&units=metric")
+        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(city)&appid=\(key)&units=metric")
         guard url != nil else { return }
         print(url!)
         

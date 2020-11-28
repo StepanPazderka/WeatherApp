@@ -12,6 +12,7 @@
 		AA158B23256FCD7A0055F55F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA158B22256FCD7A0055F55F /* Assets.xcassets */; };
 		AA158B26256FCD7A0055F55F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA158B25256FCD7A0055F55F /* Preview Assets.xcassets */; };
 		AA158B30256FCED40055F55F /* WeatherDataFromJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA158B2F256FCED40055F55F /* WeatherDataFromJSON.swift */; };
+		AA3B74A52572F509002DCA8D /* config.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3B74A42572F509002DCA8D /* config.swift */; };
 		AA934DE12570F78B00E2796A /* WeatherManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA934DE02570F78B00E2796A /* WeatherManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -24,6 +25,7 @@
 		AA158B27256FCD7A0055F55F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA158B2E256FCEA10055F55F /* SampleJSON.geojson */ = {isa = PBXFileReference; lastKnownFileType = text; path = SampleJSON.geojson; sourceTree = "<group>"; };
 		AA158B2F256FCED40055F55F /* WeatherDataFromJSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDataFromJSON.swift; sourceTree = "<group>"; };
+		AA3B74A42572F509002DCA8D /* config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = config.swift; sourceTree = "<group>"; };
 		AA934DE02570F78B00E2796A /* WeatherManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -65,6 +67,7 @@
 				AA158B2E256FCEA10055F55F /* SampleJSON.geojson */,
 				AA158B2F256FCED40055F55F /* WeatherDataFromJSON.swift */,
 				AA934DE02570F78B00E2796A /* WeatherManager.swift */,
+				AA3B74A42572F509002DCA8D /* config.swift */,
 			);
 			path = WeatherApp;
 			sourceTree = "<group>";
@@ -149,6 +152,7 @@
 				AA158B21256FCD790055F55F /* ContentView.swift in Sources */,
 				AA158B1F256FCD790055F55F /* WeatherAppApp.swift in Sources */,
 				AA934DE12570F78B00E2796A /* WeatherManager.swift in Sources */,
+				AA3B74A52572F509002DCA8D /* config.swift in Sources */,
 				AA158B30256FCED40055F55F /* WeatherDataFromJSON.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
