@@ -14,22 +14,19 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            TextField("Pick city to show", text: $city, onEditingChanged: { (changed) in
-                weatherManager.weather(for: city)
-            })
-            .padding()
-            .background(Color.gray)
-            .cornerRadius(5.0)
-            
             Text("\(self.weatherManager.currentLocationTemp)")
             .fontWeight(.bold)
             .font(.largeTitle)
             .padding()
             .onAppear{
-                DispatchQueue.global(qos: .userInitiated).async {
-                    weatherManager.weather(for: city)
-                }
+                weatherManager.weather(for: city)
             }
+            TextField("Pick city to show", text: $city, onCommit: {
+                weatherManager.weather(for: city)
+            })
+            .padding()
+            .background(Color.gray)
+            .cornerRadius(5.0)
         }
     }
 }

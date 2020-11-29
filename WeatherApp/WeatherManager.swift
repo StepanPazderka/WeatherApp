@@ -12,10 +12,12 @@ class WeatherManager: ObservableObject {
     @Published var currentLocationTemp: String = ""
     
     func weather(for city: String) {
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(city.lowercased())&appid=\(key)&units=metric")
+        let trimmedCityName = city.trimmingCharacters(in: .whitespaces)
+        
+        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(trimmedCityName.lowercased())&appid=\(self.key)&units=metric")
         guard url != nil else { return }
         print(url!)
-        
+
         let networkTask: URLSessionDataTask = URLSession.shared.dataTask(with: url!) {
             (data, response, error) in
             guard let data = data else { return }
@@ -25,7 +27,13 @@ class WeatherManager: ObservableObject {
                     print("Temperature at \(city): \(decoded.main!.temp) °C")
                     
                     DispatchQueue.main.async {
-                        self.currentLocationTemp = "\(String(describing: decoded.main!.temp)) °C"
+                        
+                        
+                        if decoded.sys?.country != nil {
+                            self.currentLocationTemp = "\(String(describing: decoded.main!.temp)) °C \(self.flag(country: decoded.sys!.country))"
+                        } else {
+                            self.currentLocationTemp = "\(String(describing: decoded.main!.temp)) °C"
+                        }
                         self.objectWillChange.send()
                     }
                 }
@@ -49,6 +57,18 @@ class WeatherManager: ObservableObject {
                 NSLog("Error in read(from:ofType:) domain= \(error.domain), description= \(error.localizedDescription)")
             }
         }
-        networkTask.resume()
+        
+        DispatchQueue.global().async {
+            networkTask.resume()
+        }
+    }
+    
+    func flag(country:String) -> String {
+        let base : UInt32 = 127397
+        var s = ""
+        for v in country.unicodeScalars {
+            s.unicodeScalars.append(UnicodeScalar(base + v.value)!)
+        }
+        return s
     }
 }
