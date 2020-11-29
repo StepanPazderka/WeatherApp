@@ -26,7 +26,7 @@ struct ContentView: View {
             .font(.largeTitle)
             .padding()
             .onAppear{
-                DispatchQueue.main.async {
+                DispatchQueue.global(qos: .userInitiated).async {
                     weatherManager.weather(for: city)
                 }
             }
