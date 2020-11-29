@@ -12,7 +12,7 @@ class WeatherManager: ObservableObject {
     @Published var currentLocationTemp: String = ""
     
     func weather(for city: String) {
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(city)&appid=\(key)&units=metric")
+        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(city.lowercased())&appid=\(key)&units=metric")
         guard url != nil else { return }
         print(url!)
         
@@ -22,10 +22,10 @@ class WeatherManager: ObservableObject {
             do {
                 let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
                 if (decoded.main != nil) {
-                    print("Temperature at \(city): \(decoded.main!.temp)")
+                    print("Temperature at \(city): \(decoded.main!.temp) °C")
                     
                     DispatchQueue.main.async {
-                        self.currentLocationTemp = String(describing: decoded.main!.temp)
+                        self.currentLocationTemp = "\(String(describing: decoded.main!.temp)) °C"
                         self.objectWillChange.send()
                     }
                 }

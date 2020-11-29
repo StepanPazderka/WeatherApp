@@ -13,20 +13,24 @@ struct ContentView: View {
     @State var city: String = ""
     
     var body: some View {
-        TextField("Pick city to show", text: $city, onEditingChanged: { (changed) in
-            weatherManager.weather(for: city)
-        })
-        .padding()
-        .background(Color.red)
-        .cornerRadius(5.0)
-        Text("\(self.weatherManager.currentLocationTemp) °C")
-        .padding()
-        .onAppear{
-            DispatchQueue.main.async {
+        VStack {
+            TextField("Pick city to show", text: $city, onEditingChanged: { (changed) in
                 weatherManager.weather(for: city)
+            })
+            .padding()
+            .background(Color.gray)
+            .cornerRadius(5.0)
+            
+            Text("\(self.weatherManager.currentLocationTemp)")
+            .fontWeight(.bold)
+            .font(.largeTitle)
+            .padding()
+            .onAppear{
+                DispatchQueue.main.async {
+                    weatherManager.weather(for: city)
+                }
             }
         }
-        
     }
 }
 
