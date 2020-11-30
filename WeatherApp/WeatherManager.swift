@@ -12,7 +12,7 @@ class WeatherManager: ObservableObject {
     @Published var currentLocationTemp: String = ""
     
     func weather(for city: String) {
-        let trimmedCityName = city.trimmingCharacters(in: .whitespaces)
+        let trimmedCityName = (city as NSString).replacingOccurrences(of: " ", with: "+")
         
         let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(trimmedCityName.lowercased())&appid=\(self.key)&units=metric")
         guard url != nil else { return }
