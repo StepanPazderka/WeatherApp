@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA04339825754B9800BABCE1 /* KeyboardResponsive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA04339725754B9800BABCE1 /* KeyboardResponsive.swift */; };
 		AA158B1F256FCD790055F55F /* WeatherAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA158B1E256FCD790055F55F /* WeatherAppApp.swift */; };
 		AA158B21256FCD790055F55F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA158B20256FCD790055F55F /* ContentView.swift */; };
 		AA158B23256FCD7A0055F55F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA158B22256FCD7A0055F55F /* Assets.xcassets */; };
@@ -17,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AA04339725754B9800BABCE1 /* KeyboardResponsive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardResponsive.swift; sourceTree = "<group>"; };
 		AA158B1B256FCD790055F55F /* WeatherApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WeatherApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA158B1E256FCD790055F55F /* WeatherAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherAppApp.swift; sourceTree = "<group>"; };
 		AA158B20256FCD790055F55F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -68,6 +70,7 @@
 				AA158B2F256FCED40055F55F /* WeatherDataFromJSON.swift */,
 				AA934DE02570F78B00E2796A /* WeatherManager.swift */,
 				AA3B74A42572F509002DCA8D /* config.swift */,
+				AA04339725754B9800BABCE1 /* KeyboardResponsive.swift */,
 			);
 			path = WeatherApp;
 			sourceTree = "<group>";
@@ -149,6 +152,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA04339825754B9800BABCE1 /* KeyboardResponsive.swift in Sources */,
 				AA158B21256FCD790055F55F /* ContentView.swift in Sources */,
 				AA158B1F256FCD790055F55F /* WeatherAppApp.swift in Sources */,
 				AA934DE12570F78B00E2796A /* WeatherManager.swift in Sources */,

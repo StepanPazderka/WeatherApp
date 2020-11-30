@@ -6,10 +6,16 @@
 //
 
 import Foundation
+import MapKit
 
 class WeatherManager: ObservableObject {
     var key = Config.key
     @Published var currentLocationTemp: String = ""
+    @Published var coord = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 0, longitude: 0), span: MKCoordinateSpan(latitudeDelta: 100, longitudeDelta: 100))
+    
+    func NewCoordinateRegion(latitude: Double, longtitude: Double) -> MKCoordinateRegion {
+        return MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: latitude, longitude: longtitude), span: MKCoordinateSpan(latitudeDelta: 10, longitudeDelta: 10))
+    }
     
     func weather(for city: String) {
         let trimmedCityName = (city as NSString).replacingOccurrences(of: " ", with: "+")
@@ -24,11 +30,18 @@ class WeatherManager: ObservableObject {
             do {
                 let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
                 if (decoded.main != nil) {
-                    print("Temperature at \(city): \(decoded.main!.temp) °C")
-                    
+
                     DispatchQueue.main.async {
+                        print("Temperature at \(city): \(decoded.main!.temp) °C")
+                        print("Coords for \(city): \(decoded.coord!)")
                         
-                        
+                        if (decoded.coord?.lat != nil) {
+                            self.coord = self.NewCoordinateRegion(latitude: (decoded.coord!.lat), longtitude: (decoded.coord!.lon))
+                        } else {
+                            print("Cant find coord")
+                            self.coord = self.NewCoordinateRegion(latitude: 0, longtitude: 0)
+                        }
+
                         if decoded.sys?.country != nil {
                             self.currentLocationTemp = "\(String(describing: decoded.main!.temp)) °C \(self.flag(country: decoded.sys!.country))"
                         } else {
@@ -40,8 +53,13 @@ class WeatherManager: ObservableObject {
                 
                 if (decoded.message != nil) {
                     print("Message: \(decoded.message!)")
+                    
                     DispatchQueue.main.async {
-                        self.currentLocationTemp = String(describing: decoded.message!)
+                        if (decoded.message! != "Nothing to geocode") {
+                            self.currentLocationTemp = String(describing: decoded.message!)
+                            self.coord = self.NewCoordinateRegion(latitude: 0, longtitude: 0)
+                        }
+                        
                         self.objectWillChange.send()
                     }
                 }
