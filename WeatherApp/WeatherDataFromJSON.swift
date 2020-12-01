@@ -1,6 +1,11 @@
 
 import Foundation
 
+struct CountryData: Codable {
+    let countryCode: String?
+    let description: String?
+}
+
 enum ChangeableType: Codable {
     func encode(to encoder: Encoder) throws {
         
@@ -38,10 +43,16 @@ struct WeatherData: Codable {
     let clouds: Clouds?
     let dt: Int?
     let sys: Sys?
-    let timezone, id: Int?
+    let timezone: ChangeableType?
+    let id: Int?
     let name: String?
-    let cod: ChangeableType
+    let cod: ChangeableType?
     let message: String?
+    let current: Current?
+}
+
+struct Current: Codable {
+    let temp: Float?
 }
 
 // MARK: - Clouds
