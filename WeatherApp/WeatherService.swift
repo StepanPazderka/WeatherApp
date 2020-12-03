@@ -9,7 +9,98 @@ import Foundation
 import MapKit
 
 class WeatherService: ObservableObject {
-    var key: String {
+    @Published var currentLocationTemp: String = ""
+    @Published var MapViewCoordinates = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 0, longitude: 0), span: MKCoordinateSpan(latitudeDelta: 100, longitudeDelta: 100))
+    @Published var country = ""
+    @Published var records: [WeatherRecord] = []
+    
+    struct Coordinates {
+        var lat: Float
+        var long: Float
+    }
+    
+    struct WeatherRecord {
+        var temperature: Float
+        var date: Date
+        var coordinates: Coordinates
+        var distance: Float
+    }
+    
+    func addWeatherRecord(latitude: Double, longitude: Double, temperature: Float) {
+        print("Saving temp: \(temperature) on lat: \(latitude) and long: \(longitude)")
+        records.append(WeatherRecord(temperature: temperature, date: Date(), coordinates: Coordinates(lat: Float(latitude), long: Float(longitude)), distance: 0.0))
+    }
+    
+    func calculateTemperatureForCurrentLocation(currentCoordinates: MKCoordinateRegion, completion: ((Float) -> ())?) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            for index in self.records.indices {
+//                let distance: Float = self.getDistanceTo(latitude: Double(self.records[record].coordinates.lat), longitude: Double(self.records[record].coordinates.long), currentMapCoord: currentCoordinates)
+                let distance = self.getDistanceTo(coordinates: CLLocationCoordinate2D(latitude: CLLocationDegrees(self.records[index].coordinates.lat), longitude: CLLocationDegrees(self.records[index].coordinates.long)))
+
+                self.records[index].distance = Float(distance)
+                    
+                DispatchQueue.main.async {
+                    print("Record #\(index+1): \(self.records[index].temperature) Distance: \(self.records[index].distance)")
+                }
+            }
+
+            var valuesForFinalCalculations: [Float] = []
+            for record in self.records {
+                let temperatureRecordCalibrated: Float = record.temperature * (record.distance / Float(self.records.count))
+                valuesForFinalCalculations.append(temperatureRecordCalibrated)
+            }
+            
+            let maxValue = self.records.max(by: { a, b in
+                a.distance < b.distance
+            })
+            
+            let summedUpValues = valuesForFinalCalculations.reduce(0, +)
+            
+            DispatchQueue.main.async {
+                self.currentLocationTemp = String.localizedStringWithFormat("%.2f °C", maxValue?.temperature ?? "No data")
+                
+                if completion != nil {
+//                    completion!(summedDistanceRecords)
+                }
+            }
+        }
+    }
+    
+    func getDistanceTo(coordinates: CLLocationCoordinate2D) -> CLLocationDistance {
+        let coordinate: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: coordinates.latitude, longitude: coordinates.longitude)
+        let currentCoordinate: CLLocationCoordinate2D = self.MapViewCoordinates.center
+        
+        let maximumDistance = CLLocation(latitude: 90, longitude: 180).distance(from: CLLocation(latitude: -90, longitude: -180))
+        print("Maximum possible distance is: \(maximumDistance)")
+        let normalizedDistance = coordinate.distance(from: currentCoordinate)/20003920.289225627
+        let invertedDistance = abs(normalizedDistance-1)
+        return invertedDistance
+    }
+    
+    func getDistanceTo(latitude: Double, longitude: Double, currentMapCoord: MKCoordinateRegion) -> Float {
+        // Calculation happens in lat and long with abs values (we are calculating over spherical object, in that sense -90 and 90, are actually the same thing)
+        let latitudeDifference = abs(latitude - currentMapCoord.center.latitude)
+        let longitudeDifference = abs(longitude - currentMapCoord.center.longitude)
+        print("Record Lat: \(latitude), View Lat: \(currentMapCoord.center.latitude)")
+        
+        let squared: Double = Double(sqrt((latitudeDifference * latitudeDifference) + (longitudeDifference * longitudeDifference)))
+//        let hypotResult = hypot(latitudeDifference, longitudeDifference)
+//        let normalized = (hypotResult/201.25) //Normalizes value to maximum value (remaps value between 0 and 1)
+          
+//        let inverted = (((squared)/130)-1)*(-1) // Inverts value (closer to the original is 1 and furthest is 0
+//        let toPowerOf3 = pow(inverted, 15).truncate(places: 6)
+        let normalized = max(squared, 0) //Normalizes value to maximum value (remaps value between 0 and 1)
+        let result = normalized
+        
+        let lat1 = latitude * Double.pi/180
+        let lat2 = currentMapCoord.center.latitude * Double.pi/180
+        
+        let DifLat1 = (lat2-lat1) * Double.pi/180
+        
+        return Float(result)
+    }
+    
+    var OpenWeatherAPIkey: String {
         let dir = Bundle.main.path(forResource: "key", ofType: "txt")
         //reading
         do {
@@ -25,9 +116,6 @@ class WeatherService: ObservableObject {
         }
         return ""
     }
-    @Published var currentLocationTemp: String = ""
-    @Published var coord = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 0, longitude: 0), span: MKCoordinateSpan(latitudeDelta: 100, longitudeDelta: 100))
-    @Published var country = ""
     
     func NewCoordinateRegion(latitude: Double, longitude: Double) -> MKCoordinateRegion {
         return MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: latitude, longitude: longitude), span: MKCoordinateSpan(latitudeDelta: 10, longitudeDelta: 10))
@@ -76,10 +164,17 @@ class WeatherService: ObservableObject {
         }
     }
     
+    func getWeatherInLoop() {
+        let timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { timer in
+            self.getWeatherBy(latitude: self.MapViewCoordinates.center.latitude, longitude: self.MapViewCoordinates.center.longitude, completion: nil)
+//            print("Timer fired")
+        }
+    }
+    
     func getWeatherBy(city: String) {
         let trimmedCityName = (city as NSString).replacingOccurrences(of: " ", with: "+")
         
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(trimmedCityName.lowercased())&appid=\(self.key)&units=metric")
+        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(trimmedCityName.lowercased())&appid=\(self.OpenWeatherAPIkey)&units=metric")
         guard url != nil else { return }
         print(url!)
 
@@ -89,22 +184,23 @@ class WeatherService: ObservableObject {
             do {
                 let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
                 if (decoded.main != nil) {
-
+                    self.addWeatherRecord(latitude: decoded.coord!.lat, longitude: decoded.coord!.lon, temperature: Float(decoded.main!.temp))
                     DispatchQueue.main.async {
                         print("Temperature at \(city): \(decoded.main!.temp) °C")
                         print("Coords for \(city): \(decoded.coord!)")
 
                         if (decoded.coord?.lat != nil) {
-                            self.coord = self.NewCoordinateRegion(latitude: (decoded.coord!.lat), longitude: (decoded.coord!.lon))
+                            self.MapViewCoordinates = self.NewCoordinateRegion(latitude: (decoded.coord!.lat), longitude: (decoded.coord!.lon))
                         } else {
                             print("Cant find coord")
-                            self.coord = self.NewCoordinateRegion(latitude: 0, longitude: 0)
+                            self.MapViewCoordinates = self.NewCoordinateRegion(latitude: 0, longitude: 0)
                         }
 
                         self.currentLocationTemp = "\(String(describing: decoded.main!.temp)) °C"
-                        if decoded.sys?.country != nil {
-                            self.country = self.flag(country: decoded.sys!.country)
-                        }
+                        
+//                        if decoded.sys?.country != nil {
+//                            self.country = self.flag(country: decoded.sys!.country)
+//                        }
                     }
                 }
                 
@@ -118,7 +214,7 @@ class WeatherService: ObservableObject {
                         
                         if (decoded.message! != "Nothing to geocode") || String(describing: decoded.message!).contains("Your account is temporary blocked") != false {
                             self.currentLocationTemp = String(describing: decoded.message!)
-                            self.coord = self.NewCoordinateRegion(latitude: 0, longitude: 0)
+                            self.MapViewCoordinates = self.NewCoordinateRegion(latitude: 0, longitude: 0)
                         }
                     }
                 }
@@ -140,8 +236,8 @@ class WeatherService: ObservableObject {
         }
     }
     
-    func getWeatherBy(latitude: Double, longitude: Double) {
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/onecall?lat=\(latitude)&lon=\(longitude)&appid=\(self.key)&units=metric")
+    func getWeatherBy(latitude: Double, longitude: Double,  completion: ((Float) -> ())?) {
+        let url = URL(string: "https://api.openweathermap.org/data/2.5/onecall?lat=\(latitude)&lon=\(longitude)&appid=\(self.OpenWeatherAPIkey)&units=metric")
         guard url != nil else { return }
         print(url!)
         print("Long: \(longitude), Lat: \(latitude)")
@@ -152,8 +248,13 @@ class WeatherService: ObservableObject {
             do {
                 let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
                 if (decoded.current?.temp != nil) {
+                    self.addWeatherRecord(latitude: latitude, longitude: longitude, temperature: Float(decoded.current!.temp!))
                     DispatchQueue.main.async {
-                        self.currentLocationTemp = "\(String(describing: decoded.current!.temp!)) °C"
+                        let temperatureAsString = decoded.current!.temp!
+                        self.currentLocationTemp = "\(temperatureAsString) °C"
+                        if completion != nil {
+                            completion!(temperatureAsString)
+                        }
                     }
                 }
                 
