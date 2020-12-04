@@ -11,6 +11,7 @@ import MapKit
 
 struct ContentView: View {
     @ObservedObject var weatherService: WeatherService = WeatherService()
+    @ObservedObject var locationManager = LocationManager()
     
     @State var city: String = ""
     @State var country: String = ""
@@ -23,18 +24,18 @@ struct ContentView: View {
                         weatherService.calculateTemperatureForCurrentLocation(currentCoordinates: weatherService.MapViewCoordinates, completion: nil)
                     }
                     .onAppear() {
-//                        weatherService.getWeatherInLoop()
+                        weatherService.MapViewCoordinates = weatherService.NewCoordinateRegion(latitude: locationManager.lastLocation?.coordinate.latitude ?? 0, longitude: locationManager.lastLocation?.coordinate.longitude ?? 0)
                     }
                     
                 VStack {
                     Spacer()
                     HStack(alignment: .center) {
-                        Text("\(self.weatherService.currentLocationTemp) ")
+                        Text("\(self.weatherService.currentLocationTemp)")
                             .fontWeight(.bold)
                             .frame(height: .leastNormalMagnitude, alignment: .trailing)
                             .padding()
                             .onAppear{
-                                weatherService.getWeatherBy(city: city)
+//                                weatherService.getWeatherBy(city: city)
                             }
                           .minimumScaleFactor(0.8)
 //                        Text(weatherService.country)
@@ -55,11 +56,11 @@ struct ContentView: View {
                     .cornerRadius(15.0)
                     .shadow(radius: 25)
                     .keyboardResponsive()
-                    Button(action: {
-                        weatherService.getWeatherBy(latitude: weatherService.MapViewCoordinates.center.latitude, longitude: weatherService.MapViewCoordinates.center.longitude, completion: nil)
-                    }) {
-                        Text("Make record")
-                    }
+//                    Button(action: {
+//                        weatherService.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: weatherService.MapViewCoordinates.center.latitude, longitude: weatherService.MapViewCoordinates.center.longitude), completion: nil)
+//                    }) {
+//                        Text("Make record")
+//                    }
                 }
                 .padding(EdgeInsets(top: 0, leading: 20, bottom: proxy.safeAreaInsets.bottom+50, trailing: 20))
             }
