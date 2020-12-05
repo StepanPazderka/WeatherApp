@@ -24,9 +24,9 @@ struct ContentView: View {
                         weatherService.calculateTemperatureForCurrentLocation(currentCoordinates: weatherService.MapViewCoordinates, completion: nil)
                     }
                     .onAppear() {
+                        weatherService.getWeatherBy(coordinates: CLLocationCoordinate2DMake(locationManager.lastLocation?.coordinate.latitude ?? 0, locationManager.lastLocation?.coordinate.longitude ?? 0), completion: nil)
                         weatherService.MapViewCoordinates = weatherService.NewCoordinateRegion(latitude: locationManager.lastLocation?.coordinate.latitude ?? 0, longitude: locationManager.lastLocation?.coordinate.longitude ?? 0)
                     }
-                    
                 VStack {
                     Spacer()
                     HStack(alignment: .center) {
