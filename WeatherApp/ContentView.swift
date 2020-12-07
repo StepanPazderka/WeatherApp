@@ -10,7 +10,7 @@ import Foundation
 import MapKit
 
 struct ContentView: View {
-    @ObservedObject var weatherService: WeatherService = WeatherService()
+    @ObservedObject var weatherDatabase = WeatherDatabase()
     @ObservedObject var locationManager = LocationManager()
     
     @State var city: String = ""
@@ -19,18 +19,19 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                Map(coordinateRegion: $weatherService.MapViewCoordinates, interactionModes: .all, showsUserLocation: true)
-                    .onChange(of: weatherService.MapViewCoordinates) { coord in
-                        weatherService.calculateTemperatureForCurrentLocation(currentCoordinates: weatherService.MapViewCoordinates, completion: nil)
+                Map(coordinateRegion: $weatherDatabase.MapViewCoordinates, interactionModes: .all, showsUserLocation: true)
+                    .onChange(of: weatherDatabase.MapViewCoordinates) { coord in
+                        weatherDatabase.calculateTemperatureForCurrentLocation(currentCoordinates: weatherDatabase.MapViewCoordinates)
                     }
                     .onAppear() {
-                        weatherService.getWeatherBy(coordinates: CLLocationCoordinate2DMake(locationManager.lastLocation?.coordinate.latitude ?? 0, locationManager.lastLocation?.coordinate.longitude ?? 0), completion: nil)
-                        weatherService.MapViewCoordinates = weatherService.NewCoordinateRegion(latitude: locationManager.lastLocation?.coordinate.latitude ?? 0, longitude: locationManager.lastLocation?.coordinate.longitude ?? 0)
+//                        weatherDatabase.getWeatherBy(coordinates: CLLocationCoordinate2DMake(locationManager.lastLocation?.coordinate.latitude ?? 0, locationManager.lastLocation?.coordinate.longitude ?? 0), completion: nil)
+
+//                        weatherDatabase.MapViewCoordinates = weatherDatabase.NewCoordinateRegion(latitude: locationManager.lastLocation?.coordinate.latitude ?? 0, longitude: locationManager.lastLocation?.coordinate.longitude ?? 0)
                     }
                 VStack {
                     Spacer()
                     HStack(alignment: .center) {
-                        Text("\(self.weatherService.currentLocationTemp)")
+                        Text("\(self.weatherDatabase.currentLocationTemp)")
                             .fontWeight(.bold)
                             .frame(height: .leastNormalMagnitude, alignment: .trailing)
                             .padding()
@@ -48,7 +49,7 @@ struct ContentView: View {
                     .font(.system(size: 50))
                     .padding(.bottom, 10)
                     TextField("Pick city to show", text: $city, onCommit: {
-                        weatherService.getWeatherBy(city: city)
+                        weatherDatabase.getWeatherBy(city: city)
                     })
                     .padding()
                     .background(Color(red: 0.9, green: 0.9, blue: 0.9))
@@ -71,6 +72,6 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(weatherService: WeatherService())
+        ContentView()
     }
 }
