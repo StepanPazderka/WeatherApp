@@ -14,3 +14,16 @@ struct WeatherRecord {
     var coordinates: CLLocationCoordinate2D
     var distance: Float
 }
+
+struct Coordinates {
+    var lat: Float
+    var long: Float
+}
+
+
+extension WeatherRecord: Equatable {
+    static func == (lhs: WeatherRecord, rhs: WeatherRecord) -> Bool {
+        return lhs.coordinates == rhs.coordinates
+    }
+}
+

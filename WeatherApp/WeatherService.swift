@@ -11,14 +11,8 @@ import MapKit
 class WeatherService: ObservableObject {
     @Published var country = ""
     
-    struct Coordinates {
-        var lat: Float
-        var long: Float
-    }
-    
     var OpenWeatherAPIkey: String {
         let dir = Bundle.main.path(forResource: "key", ofType: "txt")
-        //reading
         do {
             let dataFromFile = try String(contentsOf: URL(fileURLWithPath: dir!), encoding: .utf8)
             let linseFromFile = dataFromFile.components(separatedBy: .newlines)

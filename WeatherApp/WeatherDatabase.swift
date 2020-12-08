@@ -17,23 +17,57 @@ class WeatherDatabase: ObservableObject {
     var service: WeatherService = WeatherService()
     
     init() {
-        self.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: 90, longitude: 180))
-        self.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: -90, longitude: -180))
-        self.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: -90, longitude: 180))
-        self.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: 90, longitude: -180))
-        self.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: 0, longitude: 0))
+//        CreateSamples(latitudeModulo: 30, longitudeModulo: 40)
+        CreateSamples(latitudeModulo: 45, longitudeModulo: 40)
+
+    }
+    
+    fileprivate func CreateSamples(latitudeModulo: Int, longitudeModulo: Int) {
+        var iterator = 0
+        for latitude in -90...90 {
+            if latitude % latitudeModulo == 0 {
+                iterator += 1
+                print("Divison of latitude happened \(latitude)")
+                for longitude in -180...180 {
+                    if longitude % longitudeModulo == 0 {
+                        iterator += 1
+                        print("Divison of longitude happened \(longitude)")
+                        self.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: Double(latitude), longitude: Double(longitude)))
+                    }
+                }
+            }
+        }
+        print("API has been called \(iterator) times")
     }
     
     func addWeatherRecord(record: WeatherRecord) {
         print("Saving temp: \(record.temperature) on lat: \(record.coordinates.latitude) and long: \(record.coordinates.longitude)")
-        records.append(record)
+        let roundedCoordinates = CLLocationCoordinate2D(latitude: record.coordinates.latitude.rounded(), longitude: record.coordinates.longitude.rounded())
+        
+        if let existingRecord = self.loadWeatherRecord(coordinates: record.coordinates) {
+            if let index = records.firstIndex(of: existingRecord) {
+                print("Weather record for these coordinates has already existed, old record will be replaced with new one")
+                records[index] = record
+                return
+            }
+        }
+        
+        var roundedRecord = record
+        roundedRecord.coordinates = roundedCoordinates
+        
+        records.append(roundedRecord)
     }
-//
-//    func getWeatherInLoop() {
-//        _ = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { timer in
-//            self.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: self.MapViewCoordinates.center.latitude, longitude: self.MapViewCoordinates.center.longitude), completion: nil)
-//        }
-//    }
+
+    func loadWeatherRecord(coordinates: CLLocationCoordinate2D) -> WeatherRecord?  {
+        let roundedCoordinates = CLLocationCoordinate2D(latitude: coordinates.latitude.rounded(), longitude: coordinates.longitude.rounded())
+        
+        for record in self.records {
+            if record.coordinates == roundedCoordinates {
+                return record
+            }
+        }
+        return nil
+    }
     
     func getWeatherBy(city: String) {
         service.getWeatherBy(city: city) { record in
@@ -75,7 +109,6 @@ class WeatherDatabase: ObservableObject {
             
             DispatchQueue.main.async {
                 if self.records.count >= 3 {
-                    
                     let summedTemperature = (OrdereredList[0].distance * OrdereredList[0].temperature) + (OrdereredList[1].distance * OrdereredList[1].temperature) + (OrdereredList[2].distance * OrdereredList[2].temperature)
                     let summedDistance = OrdereredList[0].distance + OrdereredList[1].distance + OrdereredList[2].distance
                     let WeightedTemperature = summedTemperature / summedDistance
