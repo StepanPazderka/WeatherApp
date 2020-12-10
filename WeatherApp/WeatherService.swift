@@ -8,6 +8,22 @@
 import Foundation
 import MapKit
 
+enum serviceError: Error {
+    case cityNotFound
+    case wrongCoordinates
+}
+
+extension serviceError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .cityNotFound:
+            return NSLocalizedString("City was not found by the service", comment: "Service Error")
+        default:
+            return NSLocalizedString("Service couldnt finish request", comment: "Service error")
+        }
+    }
+}
+
 class WeatherService: ObservableObject {
     @Published var country = ""
     
@@ -71,7 +87,7 @@ class WeatherService: ObservableObject {
         }
     }
     
-    func getWeatherBy(city: String, completion: ((WeatherRecord) -> ())?) {
+    func getWeatherBy(city: String, completion: ((WeatherRecord?, Error?) -> ())?) {
         let trimmedCityName = (city as NSString).replacingOccurrences(of: " ", with: "+")
         
         let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(trimmedCityName.lowercased())&appid=\(self.OpenWeatherAPIkey)&units=metric")
@@ -81,24 +97,27 @@ class WeatherService: ObservableObject {
         let networkTask: URLSessionDataTask = URLSession.shared.dataTask(with: url!) {
             (data, response, error) in
             guard let data = data else { return }
+            var record: WeatherRecord?
+            var error: serviceError?
             do {
                 let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
                 if (decoded.main != nil) {
-                    DispatchQueue.main.async {
-                        if (decoded.coord?.lat != nil) {
-                            let record = WeatherRecord(temperature: Float(decoded.main!.temp), date: Date(), coordinates: CLLocationCoordinate2D(latitude: decoded.coord!.lat, longitude: decoded.coord!.lon), distance: 0.0)
-                            
-                            if completion != nil {
-                                completion!(record)
-                            }
-                        } else {
-                            print("Cant find coord")
+                    if (decoded.coord?.lat != nil) {
+                        DispatchQueue.main.async {
+                            record = WeatherRecord(temperature: Float(decoded.main!.temp), date: Date(), coordinates: CLLocationCoordinate2D(latitude: decoded.coord!.lat, longitude: decoded.coord!.lon), distance: 0.0)
                         }
-//                        if decoded.sys?.country != nil {
-//                            self.country = self.flag(country: decoded.sys!.country)
-//                        }
+                    }
+                } else {
+                    error = serviceError.cityNotFound
+                }
+                
+                if completion != nil {
+                    DispatchQueue.main.async {
+                        completion!(record, error)
                     }
                 }
+                    //                    throw serviceError.cityNotFound
+                
                 
                 if (decoded.message != nil) {
                     print("Message: \(decoded.message!)")
@@ -124,6 +143,8 @@ class WeatherService: ObservableObject {
             } catch let error as NSError {
                 NSLog("Error in read(from:ofType:) domain= \(error.domain), description= \(error.localizedDescription)")
             }
+            
+            
         }
         
         DispatchQueue.global().async {

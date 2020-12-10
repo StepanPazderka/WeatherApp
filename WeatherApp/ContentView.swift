@@ -15,6 +15,7 @@ struct ContentView: View {
     
     @State var city: String = ""
     @State var country: String = ""
+    @State var showingAlert: Bool = false
     
     var body: some View {
         GeometryReader { proxy in
@@ -23,11 +24,6 @@ struct ContentView: View {
                     .onChange(of: weatherDatabase.MapViewCoordinates) { coord in
                         weatherDatabase.calculateTemperatureForCurrentLocation(currentCoordinates: weatherDatabase.MapViewCoordinates)
                     }
-                    .onAppear() {
-//                        weatherDatabase.getWeatherBy(coordinates: CLLocationCoordinate2DMake(locationManager.lastLocation?.coordinate.latitude ?? 0, locationManager.lastLocation?.coordinate.longitude ?? 0), completion: nil)
-
-//                        weatherDatabase.MapViewCoordinates = weatherDatabase.NewCoordinateRegion(latitude: locationManager.lastLocation?.coordinate.latitude ?? 0, longitude: locationManager.lastLocation?.coordinate.longitude ?? 0)
-                    }
                 VStack {
                     Spacer()
                     HStack(alignment: .center) {
@@ -35,10 +31,7 @@ struct ContentView: View {
                             .fontWeight(.bold)
                             .frame(height: .leastNormalMagnitude, alignment: .trailing)
                             .padding()
-                            .onAppear{
-//                                weatherService.getWeatherBy(city: city)
-                            }
-                          .minimumScaleFactor(0.8)
+                            .minimumScaleFactor(0.8)
 //                        Text(weatherService.country)
 //                            .frame(width: 50, height: .leastNormalMagnitude, alignment: .leading)
 //                            .padding()
@@ -51,6 +44,7 @@ struct ContentView: View {
                     TextField("Pick city to show", text: $city, onCommit: {
                         weatherDatabase.getWeatherBy(city: city)
                     })
+                    .modifier(ClearButton(text: $city))
                     .padding()
                     .background(Color(red: 0.9, green: 0.9, blue: 0.9))
                     .foregroundColor(Color.black)
@@ -64,8 +58,37 @@ struct ContentView: View {
 //                    }
                 }
                 .padding(EdgeInsets(top: 0, leading: 20, bottom: proxy.safeAreaInsets.bottom+50, trailing: 20))
+                .alert(isPresented: $weatherDatabase.alertRaised) { () -> Alert in
+                    Alert(title: Text("Cannot find \(weatherDatabase.chosenCity)"))
+                }
             }
             .ignoresSafeArea()
+        }
+    }
+}
+
+struct ClearButton: ViewModifier
+{
+    @Binding var text: String
+
+    public func body(content: Content) -> some View
+    {
+        ZStack(alignment: .trailing)
+        {
+            content
+
+            if !text.isEmpty
+            {
+                Button(action:
+                {
+                    self.text = ""
+                })
+                {
+                    Image(systemName: "delete.left")
+                        .foregroundColor(Color(UIColor.opaqueSeparator))
+                }
+                .padding(.trailing, 8)
+            }
         }
     }
 }

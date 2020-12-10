@@ -12,17 +12,18 @@ import MapKit
 class WeatherDatabase: ObservableObject {
     @Published var MapViewCoordinates = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 0, longitude: 0), span: MKCoordinateSpan(latitudeDelta: 50, longitudeDelta: 50))
     @Published var currentLocationTemp: String = ""
+    @Published var alertRaised: Bool = false
+    @Published var chosenCity: String = ""
     
-    var records: [WeatherRecord] = []
+    private var records: [WeatherRecord] = []
     var service: WeatherService = WeatherService()
     
     init() {
 //        CreateSamples(latitudeModulo: 30, longitudeModulo: 40)
         CreateSamples(latitudeModulo: 45, longitudeModulo: 40)
-
     }
     
-    fileprivate func CreateSamples(latitudeModulo: Int, longitudeModulo: Int) {
+    func CreateSamples(latitudeModulo: Int, longitudeModulo: Int) {
         var iterator = 0
         for latitude in -90...90 {
             if latitude % latitudeModulo == 0 {
@@ -70,10 +71,19 @@ class WeatherDatabase: ObservableObject {
     }
     
     func getWeatherBy(city: String) {
-        service.getWeatherBy(city: city) { record in
-            self.addWeatherRecord(record: record)
-            self.MapViewCoordinates = self.NewCoordinateRegion(latitude: record.coordinates.latitude, longitude: record.coordinates.longitude)
-            self.currentLocationTemp = String.localizedStringWithFormat("%.2f °C", record.temperature)
+        self.chosenCity = city
+        service.getWeatherBy(city: city) { record, error in
+            if record != nil {
+                self.addWeatherRecord(record: record!)
+                self.MapViewCoordinates = self.NewCoordinateRegion(latitude: record!.coordinates.latitude, longitude: record!.coordinates.longitude)
+                self.currentLocationTemp = String.localizedStringWithFormat("%.2f °C", record!.temperature)
+            }
+                        
+            if error != nil {
+                self.alertRaised = true
+                print("Error: \(error!.localizedDescription)")
+//                self.chosenCity = ""
+            }
         }
     }
     
