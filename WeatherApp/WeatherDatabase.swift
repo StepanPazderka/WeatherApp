@@ -19,8 +19,8 @@ class WeatherDatabase: ObservableObject {
     var service: WeatherService = WeatherService()
     
     init() {
-//        CreateSamples(latitudeModulo: 30, longitudeModulo: 40)
-        CreateSamples(latitudeModulo: 45, longitudeModulo: 40)
+        CreateSamples(latitudeModulo: 20, longitudeModulo: 20)
+//        CreateSamples(latitudeModulo: 45, longitudeModulo: 40)
     }
     
     func CreateSamples(latitudeModulo: Int, longitudeModulo: Int) {
@@ -33,7 +33,7 @@ class WeatherDatabase: ObservableObject {
                     if longitude % longitudeModulo == 0 {
                         iterator += 1
                         print("Divison of longitude happened \(longitude)")
-                        self.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: Double(latitude), longitude: Double(longitude)))
+                        self.getWeatherAt(coordinates: CLLocationCoordinate2D(latitude: Double(latitude), longitude: Double(longitude)))
                     }
                 }
             }
@@ -70,24 +70,23 @@ class WeatherDatabase: ObservableObject {
         return nil
     }
     
-    func getWeatherBy(city: String) {
+    func getWeatherAt(city: String) {
         self.chosenCity = city
-        service.getWeatherBy(city: city) { record, error in
-            if record != nil {
-                self.addWeatherRecord(record: record!)
-                self.MapViewCoordinates = self.NewCoordinateRegion(latitude: record!.coordinates.latitude, longitude: record!.coordinates.longitude)
-                self.currentLocationTemp = String.localizedStringWithFormat("%.2f °C", record!.temperature)
-            }
-                        
-            if error != nil {
+        service.getWeatherBy(city: city) { result in
+            switch result {
+            case .success(let record):
+                self.addWeatherRecord(record: record)
+                self.MapViewCoordinates = self.NewCoordinateRegion(latitude: record.coordinates.latitude, longitude: record.coordinates.longitude)
+                self.currentLocationTemp = String.localizedStringWithFormat("%.2f °C", record.temperature)
+            case .failure(let error):
                 self.alertRaised = true
-                print("Error: \(error!.localizedDescription)")
+                print("Error: \(error.localizedDescription)")
 //                self.chosenCity = ""
             }
         }
     }
     
-    func getWeatherBy(coordinates: CLLocationCoordinate2D) {
+    func getWeatherAt(coordinates: CLLocationCoordinate2D) {
         service.getWeatherBy(coordinates: coordinates) { record in
             self.addWeatherRecord(record: record)
         }

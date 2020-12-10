@@ -42,7 +42,7 @@ struct ContentView: View {
                     .font(.system(size: 50))
                     .padding(.bottom, 10)
                     TextField("Pick city to show", text: $city, onCommit: {
-                        weatherDatabase.getWeatherBy(city: city)
+                        weatherDatabase.getWeatherAt(city: city)
                     })
                     .modifier(ClearButton(text: $city))
                     .padding()

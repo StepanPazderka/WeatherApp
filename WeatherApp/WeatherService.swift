@@ -87,15 +87,14 @@ class WeatherService: ObservableObject {
         }
     }
     
-    func getWeatherBy(city: String, completion: ((WeatherRecord?, Error?) -> ())?) {
-        let trimmedCityName = (city as NSString).replacingOccurrences(of: " ", with: "+")
+    func getWeatherBy(city: String, completion: @escaping ((Result<WeatherRecord, Error>) -> ())) {
+        let cityNameTrimmed = (city as NSString).replacingOccurrences(of: " ", with: "+").lowercased()
         
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(trimmedCityName.lowercased())&appid=\(self.OpenWeatherAPIkey)&units=metric")
+        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(cityNameTrimmed)&appid=\(self.OpenWeatherAPIkey)&units=metric")
         guard url != nil else { return }
         print(url!)
 
-        let networkTask: URLSessionDataTask = URLSession.shared.dataTask(with: url!) {
-            (data, response, error) in
+        let networkTask: URLSessionDataTask = URLSession.shared.dataTask(with: url!) { data, response, error in
             guard let data = data else { return }
             var record: WeatherRecord?
             var error: serviceError?
@@ -105,20 +104,17 @@ class WeatherService: ObservableObject {
                     if (decoded.coord?.lat != nil) {
                         DispatchQueue.main.async {
                             record = WeatherRecord(temperature: Float(decoded.main!.temp), date: Date(), coordinates: CLLocationCoordinate2D(latitude: decoded.coord!.lat, longitude: decoded.coord!.lon), distance: 0.0)
+                            completion(.success(record!))
                         }
                     }
                 } else {
-                    error = serviceError.cityNotFound
-                }
-                
-                if completion != nil {
                     DispatchQueue.main.async {
-                        completion!(record, error)
+                        error = serviceError.cityNotFound
+                        completion(.failure(error!))
                     }
                 }
                     //                    throw serviceError.cityNotFound
-                
-                
+
                 if (decoded.message != nil) {
                     print("Message: \(decoded.message!)")
                     
