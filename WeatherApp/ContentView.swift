@@ -17,6 +17,8 @@ struct ContentView: View {
     @State var country: String = ""
     @State var showingAlert: Bool = false
     
+    @State private var fontSize: CGFloat = 32
+    
     var body: some View {
         GeometryReader { proxy in
             ZStack {
@@ -28,18 +30,18 @@ struct ContentView: View {
                     Spacer()
                     HStack(alignment: .center) {
                         Text("\(self.weatherDatabase.currentLocationTemp)")
+                            .kerning(0)
+                            .tracking(1)
                             .fontWeight(.bold)
-                            .frame(height: .leastNormalMagnitude, alignment: .trailing)
                             .padding()
-                            .minimumScaleFactor(0.8)
-//                        Text(weatherService.country)
-//                            .frame(width: 50, height: .leastNormalMagnitude, alignment: .leading)
-//                            .padding()
-//                            .shadow(color: Color.black, radius: 55)
+                            .lineLimit(1)
+                            .frame(width: 235, height: 40, alignment: Alignment.center)
+                            
+                            
+//                            .minimumScaleFactor(0.8)
                     }
-//                    .frame(width: 350, height: 50, alignment: .center)
                     .shadow(color: Color.black, radius: 55)
-                    .font(.system(size: 50))
+                    .font(.system(size: 40))
                     .padding(.bottom, 10)
                     TextField("Pick city to show", text: $city, onCommit: {
                         weatherDatabase.getWeatherAt(city: city)
@@ -51,11 +53,6 @@ struct ContentView: View {
                     .cornerRadius(15.0)
                     .shadow(radius: 25)
                     .keyboardResponsive()
-//                    Button(action: {
-//                        weatherService.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: weatherService.MapViewCoordinates.center.latitude, longitude: weatherService.MapViewCoordinates.center.longitude), completion: nil)
-//                    }) {
-//                        Text("Make record")
-//                    }
                 }
                 .padding(EdgeInsets(top: 0, leading: 20, bottom: proxy.safeAreaInsets.bottom+50, trailing: 20))
                 .alert(isPresented: $weatherDatabase.alertRaised) { () -> Alert in

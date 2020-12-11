@@ -19,8 +19,8 @@ class WeatherManager: ObservableObject {
     var service: WeatherService = WeatherService()
     
     init() {
-        CreateSamples(latitudeModulo: 20, longitudeModulo: 20)
-//        CreateSamples(latitudeModulo: 45, longitudeModulo: 40)
+//        CreateSamples(latitudeModulo: 20, longitudeModulo: 20)
+        CreateSamples(latitudeModulo: 45, longitudeModulo: 40)
     }
     
     func CreateSamples(latitudeModulo: Int, longitudeModulo: Int) {
@@ -87,8 +87,13 @@ class WeatherManager: ObservableObject {
     }
     
     func getWeatherAt(coordinates: CLLocationCoordinate2D) {
-        service.getWeatherBy(coordinates: coordinates) { record in
-            self.addWeatherRecord(record: record)
+        service.getWeatherBy(coordinates: coordinates) { result in
+            switch result {
+            case .success(let weatherRecord):
+                self.addWeatherRecord(record: weatherRecord)
+            case .failure(let error):
+                print("Couldnot have obtained the coordinates \(error)")
+            }
         }
     }
     
