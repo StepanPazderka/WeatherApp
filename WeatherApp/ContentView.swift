@@ -10,7 +10,7 @@ import Foundation
 import MapKit
 
 struct ContentView: View {
-    @ObservedObject var weatherDatabase = WeatherDatabase()
+    @ObservedObject var weatherDatabase = WeatherManager()
     @ObservedObject var locationManager = LocationManager()
     
     @State var city: String = ""

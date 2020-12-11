@@ -9,7 +9,7 @@ import Foundation
 import CoreLocation
 import MapKit
 
-class WeatherDatabase: ObservableObject {
+class WeatherManager: ObservableObject {
     @Published var MapViewCoordinates = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 0, longitude: 0), span: MKCoordinateSpan(latitudeDelta: 50, longitudeDelta: 50))
     @Published var currentLocationTemp: String = ""
     @Published var alertRaised: Bool = false

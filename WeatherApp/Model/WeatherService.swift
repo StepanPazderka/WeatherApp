@@ -8,12 +8,15 @@
 import Foundation
 import MapKit
 
-enum serviceError: Error {
+enum ServiceError: Error {
     case cityNotFound
     case wrongCoordinates
+    case timout
+    case unableToComplete
+    case accountBlocked
 }
 
-extension serviceError: LocalizedError {
+extension ServiceError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .cityNotFound:
@@ -87,7 +90,7 @@ class WeatherService: ObservableObject {
         }
     }
     
-    func getWeatherBy(city: String, completion: @escaping ((Result<WeatherRecord, Error>) -> ())) {
+    func getWeatherBy(city: String, completion: @escaping ((Result<WeatherRecord, ServiceError>) -> ())) {
         let cityNameTrimmed = (city as NSString).replacingOccurrences(of: " ", with: "+").lowercased()
         
         let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(cityNameTrimmed)&appid=\(self.OpenWeatherAPIkey)&units=metric")
@@ -97,50 +100,36 @@ class WeatherService: ObservableObject {
         let networkTask: URLSessionDataTask = URLSession.shared.dataTask(with: url!) { data, response, error in
             guard let data = data else { return }
             var record: WeatherRecord?
-            var error: serviceError?
             do {
                 let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
-                if (decoded.main != nil) {
-                    if (decoded.coord?.lat != nil) {
-                        DispatchQueue.main.async {
-                            record = WeatherRecord(temperature: Float(decoded.main!.temp), date: Date(), coordinates: CLLocationCoordinate2D(latitude: decoded.coord!.lat, longitude: decoded.coord!.lon), distance: 0.0)
-                            completion(.success(record!))
-                        }
-                    }
-                } else {
+                if (decoded.coord?.lat != nil) {
                     DispatchQueue.main.async {
-                        error = serviceError.cityNotFound
-                        completion(.failure(error!))
+                        record = WeatherRecord(temperature: Float(decoded.main!.temp), date: Date(), coordinates: CLLocationCoordinate2D(latitude: decoded.coord!.lat, longitude: decoded.coord!.lon), distance: 0.0)
+                        completion(.success(record!))
                     }
-                }
-                    //                    throw serviceError.cityNotFound
-
-                if (decoded.message != nil) {
+                } else if (decoded.message != nil) {
                     print("Message: \(decoded.message!)")
-                    
-                    DispatchQueue.main.async {
                         if (String(describing: decoded.message!).contains("Your account is temporary blocked") == true) {
-                            
+                            DispatchQueue.main.async {
+                                completion(.failure(.accountBlocked))
+                            }
+                        }
+                    
+                        if String(describing: decoded.message!).contains("city not found") {
+                            completion(.failure(.cityNotFound))
                         }
                         
                         if (decoded.message! != "Nothing to geocode") || String(describing: decoded.message!).contains("Your account is temporary blocked") != false {
                             
                         }
+                } else {
+                    DispatchQueue.main.async {
+                        completion(.failure(.cityNotFound))
                     }
                 }
-            } catch DecodingError.keyNotFound(let key, let context) {
-                Swift.print("Could not find key \(key) in JSON: \(context.debugDescription)")
-            } catch DecodingError.valueNotFound(let type, let context) {
-                Swift.print("Could not find type \(type) in JSON: \(context.debugDescription)")
-            } catch DecodingError.typeMismatch(let type, let context) {
-                Swift.print("Type mismatch for type \(type) in JSON: \(context.debugDescription) \(context)")
-            } catch DecodingError.dataCorrupted(let context) {
-                Swift.print("Data found to be corrupted in JSON: \(context.debugDescription)")
             } catch let error as NSError {
                 NSLog("Error in read(from:ofType:) domain= \(error.domain), description= \(error.localizedDescription)")
             }
-            
-            
         }
         
         DispatchQueue.global().async {
