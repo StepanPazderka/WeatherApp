@@ -1,5 +1,5 @@
 # WeatherApp
-This is WeatherApp, it is based on OpenWeatherAPI. In order for it to function, please put your API key inside project directory inside file called "key.txt"
+This is WeatherApp, it is based on OpenWeatherMapAPI. In order for it to function, please put your API key inside project directory inside file called "key.txt"
 
 <p align="center">
   <img height="550" src="https://user-images.githubusercontent.com/15315282/101847903-90595f80-3b54-11eb-9a25-4424f46b7704.png">
