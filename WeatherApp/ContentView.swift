@@ -10,7 +10,7 @@ import Foundation
 import MapKit
 
 struct ContentView: View {
-    @ObservedObject var weatherDatabase = WeatherManager()
+    @ObservedObject var weatherManager = WeatherManager()
     @ObservedObject var locationManager = LocationManager()
     
     @State var city: String = ""
@@ -22,29 +22,28 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                Map(coordinateRegion: $weatherDatabase.MapViewCoordinates, interactionModes: .all, showsUserLocation: true)
-                    .onChange(of: weatherDatabase.MapViewCoordinates) { coord in
-                        weatherDatabase.calculateTemperatureForCurrentLocation(currentCoordinates: weatherDatabase.MapViewCoordinates)
+                Map(coordinateRegion: $weatherManager.MapViewCoordinates, interactionModes: .all, showsUserLocation: true)
+                    .onChange(of: weatherManager.MapViewCoordinates) { coord in
+                        weatherManager.calculateTemperatureForCurrentLocation(currentCoordinates: weatherManager.MapViewCoordinates)
                     }
                 VStack {
                     Spacer()
                     HStack(alignment: .center) {
-                        Text("\(self.weatherDatabase.currentLocationTemp)")
+                        Text("\(self.weatherManager.currentLocationTemp)")
                             .kerning(0)
                             .tracking(1)
                             .fontWeight(.bold)
                             .padding()
                             .lineLimit(1)
-                            .frame(width: 235, height: 40, alignment: Alignment.center)
-                            
-                            
-//                            .minimumScaleFactor(0.8)
-                    }
+                            .frame(width: 235, height: 40, alignment: Alignment.trailing)
+                        Text("\(self.weatherManager.countryFlag)")
+                            .frame(width: 60, height: 40, alignment: Alignment.leading)
+                        }
                     .shadow(color: Color.black, radius: 55)
                     .font(.system(size: 40))
                     .padding(.bottom, 10)
                     TextField("Pick city to show", text: $city, onCommit: {
-                        weatherDatabase.getWeatherAt(city: city)
+                        weatherManager.getWeatherAt(city: city)
                     })
                     .modifier(ClearButton(text: $city))
                     .padding()
@@ -55,8 +54,8 @@ struct ContentView: View {
                     .keyboardResponsive()
                 }
                 .padding(EdgeInsets(top: 0, leading: 20, bottom: proxy.safeAreaInsets.bottom+50, trailing: 20))
-                .alert(isPresented: $weatherDatabase.alertRaised) { () -> Alert in
-                    Alert(title: Text("Cannot find \(weatherDatabase.chosenCity)"))
+                .alert(isPresented: $weatherManager.alertRaised) { () -> Alert in
+                    Alert(title: Text("Cannot find \(weatherManager.chosenCity)"))
                 }
             }
             .ignoresSafeArea()

@@ -14,12 +14,12 @@ class WeatherManager: ObservableObject {
     @Published var currentLocationTemp: String = ""
     @Published var alertRaised: Bool = false
     @Published var chosenCity: String = ""
+    @Published var countryFlag: String = ""
     
     private var records: [WeatherRecord] = []
     var service: WeatherService = WeatherService()
     
     init() {
-//        CreateSamples(latitudeModulo: 20, longitudeModulo: 20)
         CreateSamples(latitudeModulo: 45, longitudeModulo: 40)
     }
     
@@ -78,6 +78,7 @@ class WeatherManager: ObservableObject {
                 self.addWeatherRecord(record: record)
                 self.MapViewCoordinates = self.NewCoordinateRegion(latitude: record.coordinates.latitude, longitude: record.coordinates.longitude)
                 self.currentLocationTemp = String.localizedStringWithFormat("%.2f °C", record.temperature)
+                self.countryFlag = record.flag
             case .failure(let error):
                 self.alertRaised = true
                 print("Error: \(error.localizedDescription)")
@@ -92,7 +93,7 @@ class WeatherManager: ObservableObject {
             case .success(let weatherRecord):
                 self.addWeatherRecord(record: weatherRecord)
             case .failure(let error):
-                print("Couldnot have obtained the coordinates \(error)")
+                print("Could not have obtained the coordinates \(error)")
             }
         }
     }
@@ -129,6 +130,12 @@ class WeatherManager: ObservableObject {
                     
                     print("Calculated temp: \(WeightedTemperature)")
                     self.currentLocationTemp = String.localizedStringWithFormat("%.2f °C", WeightedTemperature)
+                    
+                    if OrdereredList[0].distance > 0.02 {
+                        self.countryFlag = OrdereredList[0].flag
+                    } else {
+                        self.countryFlag = ""
+                    }
                 }
             }
         }
