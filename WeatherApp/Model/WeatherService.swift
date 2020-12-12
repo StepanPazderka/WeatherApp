@@ -14,6 +14,7 @@ enum ServiceError: Error {
     case timout
     case unableToComplete
     case accountBlocked
+    case noAPIkeyprovided
 }
 
 extension ServiceError: LocalizedError {
@@ -30,15 +31,14 @@ extension ServiceError: LocalizedError {
 class WeatherService: ObservableObject {
     @Published var country = ""
     
-    var OpenWeatherAPIkey: String {
+    var OpenWeatherAPIkey: String? {
         let dir = Bundle.main.path(forResource: "key", ofType: "txt")
         do {
             let dataFromFile = try String(contentsOf: URL(fileURLWithPath: dir!), encoding: .utf8)
-            let linseFromFile = dataFromFile.components(separatedBy: .newlines)
+            let linesFromFile = dataFromFile.components(separatedBy: .newlines)
             
-            guard linseFromFile.first != nil else { return "" }
-            print(linseFromFile.first!)
-            return linseFromFile.first!
+            guard linesFromFile.first != nil else { return "" }
+            return linesFromFile.first!
         }
         catch {
             print(error.localizedDescription)
@@ -72,28 +72,22 @@ class WeatherService: ObservableObject {
                     }
                 }
                 
-            } catch DecodingError.keyNotFound(let key, let context) {
-                Swift.print("Could not find key \(key) in JSON: \(context.debugDescription)")
-            } catch DecodingError.valueNotFound(let type, let context) {
-                Swift.print("Could not find type \(type) in JSON: \(context.debugDescription)")
-            } catch DecodingError.typeMismatch(let type, let context) {
-                Swift.print("Type mismatch for type \(type) in JSON: \(context.debugDescription) \(context)")
-            } catch DecodingError.dataCorrupted(let context) {
-                Swift.print("Data found to be corrupted in JSON: \(context.debugDescription)")
             } catch let error as NSError {
                 NSLog("Error in read(from:ofType:) domain= \(error.domain), description= \(error.localizedDescription)")
             }
         }
         
-        networkTask.resume()
+        DispatchQueue.global(qos: .background).async {
+            networkTask.resume()
+        }
     }
     
     func getWeatherBy(city: String, completion: @escaping (Result<WeatherRecord, ServiceError>) -> ()) {
-        let cityNameTrimmed = (city as NSString).replacingOccurrences(of: " ", with: "+").lowercased()
+        let cityNameReformatted = (city as NSString).replacingOccurrences(of: " ", with: "+").lowercased()
         
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(cityNameTrimmed)&appid=\(self.OpenWeatherAPIkey)&units=metric")
+        guard let APIkey = self.OpenWeatherAPIkey else { completion(.failure(ServiceError.noAPIkeyprovided)); return }
+        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(cityNameReformatted)&appid=\(APIkey)&units=metric")
         guard url != nil else { return }
-        print(url!)
 
         let networkTask: URLSessionDataTask = URLSession.shared.dataTask(with: url!) { data, response, error in
             guard let data = data else { return }
@@ -130,13 +124,15 @@ class WeatherService: ObservableObject {
             }
         }
         
-        DispatchQueue.global().async {
+        DispatchQueue.global(qos: .background).async {
             networkTask.resume()
         }
     }
     
     func getWeatherBy(coordinates: CLLocationCoordinate2D,  completion: @escaping (Result<WeatherRecord, ServiceError>) -> ()) {
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/onecall?lat=\(coordinates.latitude)&lon=\(coordinates.longitude)&appid=\(self.OpenWeatherAPIkey)&units=metric")
+        guard let APIkey = self.OpenWeatherAPIkey else { completion(.failure(ServiceError.noAPIkeyprovided)); return }
+
+        let url = URL(string: "https://api.openweathermap.org/data/2.5/onecall?lat=\(coordinates.latitude)&lon=\(coordinates.longitude)&appid=\(APIkey)&units=metric")
         guard url != nil else { return }
         print(url!)
         print("Long: \(coordinates.longitude), Lat: \(coordinates.latitude)")
@@ -164,7 +160,9 @@ class WeatherService: ObservableObject {
             }
         }
         
-        networkTask.resume()
+        DispatchQueue.global(qos: .background).async {
+            networkTask.resume()
+        }
     }
     
     func flag(country:String) -> String {
