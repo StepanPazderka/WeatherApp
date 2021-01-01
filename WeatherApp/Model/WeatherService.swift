@@ -148,7 +148,6 @@ class WeatherService: ObservableObject {
                     }
                 }
 
-                
                 if (decoded.message != nil) {
                     DispatchQueue.main.async {
                         completion(.failure(ServiceError.unableToComplete))

@@ -20,10 +20,12 @@ class WeatherManager: ObservableObject {
     var service: WeatherService = WeatherService()
     
     init() {
-        CreateSamples(latitudeModulo: 45, longitudeModulo: 40)
+        addWeatherRecordsInGrid(latitudeModulo: 45, longitudeModulo: 40)
+        
+        Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.updateWeatherRecords), userInfo: nil, repeats: true)
     }
     
-    func CreateSamples(latitudeModulo: Int, longitudeModulo: Int) {
+    func addWeatherRecordsInGrid(latitudeModulo: Int, longitudeModulo: Int) {
         var iterator = 0
         for latitude in -90...90 {
             if latitude % latitudeModulo == 0 {
@@ -47,7 +49,7 @@ class WeatherManager: ObservableObject {
         
         if let existingRecord = self.loadWeatherRecord(coordinates: record.coordinates) {
             if let index = records.firstIndex(of: existingRecord) {
-                print("Weather record for these coordinates has already existed, old record will be replaced with new one")
+                print("Weather record for these coordinates already exists, old record will be replaced with new one")
                 records[index] = record
                 return
             }
@@ -76,7 +78,7 @@ class WeatherManager: ObservableObject {
             switch result {
             case .success(let record):
                 self.addWeatherRecord(record: record)
-                self.MapViewCoordinates = self.NewCoordinateRegion(latitude: record.coordinates.latitude, longitude: record.coordinates.longitude)
+                self.MapViewCoordinates = self.NewCoordinateRegion(coordinates: CLLocationCoordinate2D(latitude: record.coordinates.latitude, longitude: record.coordinates.longitude))
                 self.currentLocationTemp = String.localizedStringWithFormat("%.2f °C", record.temperature)
                 self.countryFlag = record.flag
             case .failure(let error):
@@ -98,8 +100,8 @@ class WeatherManager: ObservableObject {
         }
     }
     
-    func NewCoordinateRegion(latitude: Double, longitude: Double) -> MKCoordinateRegion {
-        return MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: latitude, longitude: longitude), span: MKCoordinateSpan(latitudeDelta: 10, longitudeDelta: 10))
+    func NewCoordinateRegion(coordinates: CLLocationCoordinate2D) -> MKCoordinateRegion {
+        return MKCoordinateRegion(center: coordinates, span: MKCoordinateSpan(latitudeDelta: 10, longitudeDelta: 10))
     }
     
     func calculateTemperatureForCurrentLocation(currentCoordinates: MKCoordinateRegion) {
@@ -142,7 +144,7 @@ class WeatherManager: ObservableObject {
         
         func getDistanceTo(coordinates: CLLocationCoordinate2D) -> Double {
             let currentCoordinate: CLLocationCoordinate2D = self.MapViewCoordinates.center
-
+            
             var result2 = coordinates.distance(from: currentCoordinate)/2000 as Double
             
             if result2 != 0 {
@@ -151,4 +153,16 @@ class WeatherManager: ObservableObject {
             return result2
         }
     }
+    
+    @objc func updateWeatherRecords() {
+        for record in records {
+            let currentDate = Date()
+            
+            if (record.date - currentDate) > 120 {
+                print("\(record) is older than two minutes, will be updated")
+                self.getWeatherAt(coordinates: record.coordinates)
+            }
+        }
+    }
 }
+

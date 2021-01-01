@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7F57B592259F993E00A50907 /* Date+Comparable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F57B591259F993E00A50907 /* Date+Comparable.swift */; };
 		7F8C1ACB257EC2ED00D2563C /* key.txt in Resources */ = {isa = PBXBuildFile; fileRef = 7F8C1ACA257EC2ED00D2563C /* key.txt */; };
 		7F8F9C75257FA53700CBE7EF /* CLLocationCoordinate2D+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F8F9C74257FA53700CBE7EF /* CLLocationCoordinate2D+Equatable.swift */; };
 		AA04339825754B9800BABCE1 /* KeyboardResponsive.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA04339725754B9800BABCE1 /* KeyboardResponsive.swift */; };
@@ -25,8 +26,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7F57B591259F993E00A50907 /* Date+Comparable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Comparable.swift"; sourceTree = "<group>"; };
 		7F8C1ACA257EC2ED00D2563C /* key.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = key.txt; sourceTree = "<group>"; };
 		7F8F9C74257FA53700CBE7EF /* CLLocationCoordinate2D+Equatable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLLocationCoordinate2D+Equatable.swift"; sourceTree = "<group>"; };
+		7FEF34A32594D0A700CA0574 /* WeatherApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WeatherApp.entitlements; sourceTree = "<group>"; };
 		AA04339725754B9800BABCE1 /* KeyboardResponsive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardResponsive.swift; sourceTree = "<group>"; };
 		AA158B1B256FCD790055F55F /* WeatherApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WeatherApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA158B1E256FCD790055F55F /* WeatherApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherApp.swift; sourceTree = "<group>"; };
@@ -84,6 +87,7 @@
 		AA158B12256FCD790055F55F = {
 			isa = PBXGroup;
 			children = (
+				7F57B591259F993E00A50907 /* Date+Comparable.swift */,
 				AA158B1D256FCD790055F55F /* WeatherApp */,
 				AA158B1C256FCD790055F55F /* Products */,
 			);
@@ -100,6 +104,7 @@
 		AA158B1D256FCD790055F55F /* WeatherApp */ = {
 			isa = PBXGroup;
 			children = (
+				7FEF34A32594D0A700CA0574 /* WeatherApp.entitlements */,
 				7F8C1ACA257EC2ED00D2563C /* key.txt */,
 				AA158B1E256FCD790055F55F /* WeatherApp.swift */,
 				AA158B20256FCD790055F55F /* ContentView.swift */,
@@ -200,6 +205,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7F57B592259F993E00A50907 /* Date+Comparable.swift in Sources */,
 				AA8C5299257E546E0020B774 /* WeatherRecord.swift in Sources */,
 				7F8F9C75257FA53700CBE7EF /* CLLocationCoordinate2D+Equatable.swift in Sources */,
 				AA666B68257664C700EFBE82 /* MKCoordinateRegion+Equatable.swift in Sources */,
@@ -339,6 +345,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WeatherApp/WeatherApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"WeatherApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 3HV23S92WL;
@@ -351,6 +358,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.pazderka.WeatherApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -361,6 +369,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WeatherApp/WeatherApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"WeatherApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 3HV23S92WL;
@@ -373,6 +382,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.pazderka.WeatherApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
