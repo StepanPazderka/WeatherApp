@@ -87,7 +87,6 @@
 		AA158B12256FCD790055F55F = {
 			isa = PBXGroup;
 			children = (
-				7F57B591259F993E00A50907 /* Date+Comparable.swift */,
 				AA158B1D256FCD790055F55F /* WeatherApp */,
 				AA158B1C256FCD790055F55F /* Products */,
 			);
@@ -104,21 +103,22 @@
 		AA158B1D256FCD790055F55F /* WeatherApp */ = {
 			isa = PBXGroup;
 			children = (
-				7FEF34A32594D0A700CA0574 /* WeatherApp.entitlements */,
-				7F8C1ACA257EC2ED00D2563C /* key.txt */,
-				AA158B1E256FCD790055F55F /* WeatherApp.swift */,
-				AA158B20256FCD790055F55F /* ContentView.swift */,
 				7F4930FF2582D82400758474 /* View Model */,
 				7F4931012582D82B00758474 /* Model */,
 				7FDAF02A2583EB1600FBB9A1 /* Libraries */,
+				AA158B24256FCD7A0055F55F /* Preview Content */,
+				AA158B1E256FCD790055F55F /* WeatherApp.swift */,
+				AA158B20256FCD790055F55F /* ContentView.swift */,
+				7FEF34A32594D0A700CA0574 /* WeatherApp.entitlements */,
+				7F8C1ACA257EC2ED00D2563C /* key.txt */,
 				AA158B22256FCD7A0055F55F /* Assets.xcassets */,
 				AA158B27256FCD7A0055F55F /* Info.plist */,
-				AA158B24256FCD7A0055F55F /* Preview Content */,
 				AAD12CBA257726E000EB7F1A /* Double+Truncate.swift */,
 				AA158B2F256FCED40055F55F /* WeatherData+Codable.swift */,
 				AA666B67257664C700EFBE82 /* MKCoordinateRegion+Equatable.swift */,
 				7F8F9C74257FA53700CBE7EF /* CLLocationCoordinate2D+Equatable.swift */,
 				AA93F7A925792DE60039D7A9 /* CLLocation+Distance.swift */,
+				7F57B591259F993E00A50907 /* Date+Comparable.swift */,
 			);
 			path = WeatherApp;
 			sourceTree = "<group>";
