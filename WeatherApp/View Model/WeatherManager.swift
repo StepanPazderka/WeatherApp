@@ -13,6 +13,7 @@ class WeatherManager: ObservableObject {
     @Published var MapViewCoordinates = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 0, longitude: 0), span: MKCoordinateSpan(latitudeDelta: 50, longitudeDelta: 50))
     @Published var currentLocationTemp: String = ""
     @Published var alertRaised: Bool = false
+    @Published var alertDescription: String = ""
     @Published var chosenCity: String = ""
     @Published var countryFlag: String = ""
     
@@ -82,9 +83,18 @@ class WeatherManager: ObservableObject {
                 self.currentLocationTemp = String.localizedStringWithFormat("%.2f °C", record.temperature)
                 self.countryFlag = record.flag
             case .failure(let error):
-                self.alertRaised = true
-                print("Error: \(error.localizedDescription)")
-//                self.chosenCity = ""
+                DispatchQueue.main.async {
+                    if error == .cityNotFound {
+                        self.alertRaised = true
+                        self.alertDescription = "Can't find city called \(self.chosenCity)"
+                    }
+                    else if error == .wrongData {
+                        self.alertRaised = true
+                        self.alertDescription = "Request couldn't be completed. Are you connected to the internet?"
+                    }
+                    print("Error: \(error)")
+    //                self.chosenCity = ""
+                }
             }
         }
     }

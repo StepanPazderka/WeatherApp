@@ -52,9 +52,12 @@ class WeatherService: ObservableObject {
         let url = URL(string: "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=\(latitude)&longitude=\(longitude)")
         
         guard url != nil else { return }
-        print(url!)
 
         let networkTask: URLSessionDataTask = URLSession.shared.dataTask(with: url!) { data, response, error in
+            if error != nil {
+                print(error!)
+            }
+            
             guard let data = data else { return }
             do {
                 let decoded = try JSONDecoder().decode(CountryData.self, from: data)
@@ -119,6 +122,9 @@ class WeatherService: ObservableObject {
                     }
                 }
             } catch let error as NSError {
+                DispatchQueue.main.async {
+                    completion(.failure(.cityNotFound))
+                }
                 NSLog("Error in read(from:ofType:) domain= \(error.domain), description= \(error.localizedDescription)")
             }
         }

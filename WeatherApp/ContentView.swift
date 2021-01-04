@@ -55,7 +55,7 @@ struct ContentView: View {
                 }
                 .padding(EdgeInsets(top: 0, leading: 20, bottom: proxy.safeAreaInsets.bottom+50, trailing: 20))
                 .alert(isPresented: $weatherManager.alertRaised) { () -> Alert in
-                    Alert(title: Text("Cannot find \(weatherManager.chosenCity)"))
+                    Alert(title: Text(weatherManager.alertDescription))
                 }
             }
             .ignoresSafeArea()
