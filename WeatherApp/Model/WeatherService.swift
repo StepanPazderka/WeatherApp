@@ -11,7 +11,7 @@ import MapKit
 enum ServiceError: Error {
     case cityNotFound
     case wrongCoordinates
-    case timout
+    case timeout
     case unableToComplete
     case accountBlocked
     case noAPIkeyprovided
@@ -54,8 +54,8 @@ class WeatherService: ObservableObject {
         guard url != nil else { return }
 
         let networkTask: URLSessionDataTask = URLSession.shared.dataTask(with: url!) { data, response, error in
-            if error != nil {
-                print(error!)
+            if  let error = error {
+                print("Network request raised error: \(error)")
             }
             
             guard let data = data else { return }
@@ -92,7 +92,7 @@ class WeatherService: ObservableObject {
         let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(cityNameReformatted)&appid=\(APIkey)&units=metric")
 
         let networkTask: URLSessionDataTask = URLSession.shared.dataTask(with: url!) { data, response, error in
-            guard let data = data else { completion(.failure(ServiceError.wrongData));return }
+            guard let data = data else { completion(.failure(ServiceError.timeout));return }
             var record: WeatherRecord?
             do {
                 let decoded = try JSONDecoder().decode(WeatherData.self, from: data)

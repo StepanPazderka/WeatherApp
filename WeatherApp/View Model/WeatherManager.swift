@@ -88,7 +88,7 @@ class WeatherManager: ObservableObject {
                         self.alertRaised = true
                         self.alertDescription = "Can't find city called \(self.chosenCity)"
                     }
-                    else if error == .wrongData {
+                    else if error == .timeout {
                         self.alertRaised = true
                         self.alertDescription = "Request couldn't be completed. Are you connected to the internet?"
                     }
