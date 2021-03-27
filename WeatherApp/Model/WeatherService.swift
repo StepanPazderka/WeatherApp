@@ -7,6 +7,7 @@
 
 import Foundation
 import MapKit
+import Alamofire
 
 enum ServiceError: Error {
     case cityNotFound
@@ -53,12 +54,12 @@ class WeatherService: ObservableObject {
         
         guard url != nil else { return }
 
-        let networkTask: URLSessionDataTask = URLSession.shared.dataTask(with: url!) { data, response, error in
-            if error != nil {
-                print(error!)
+        AF.request(url!).response { response in
+            if response.error != nil {
+                print(response.error!)
             }
             
-            guard let data = data else { return }
+            guard let data = response.data else { return }
             do {
                 let decoded = try JSONDecoder().decode(CountryData.self, from: data)
                 
@@ -79,10 +80,6 @@ class WeatherService: ObservableObject {
                 NSLog("Error in read(from:ofType:) domain= \(error.domain), description= \(error.localizedDescription)")
             }
         }
-        
-        DispatchQueue.global(qos: .background).async {
-            networkTask.resume()
-        }
     }
     
     func getWeatherBy(city: String, completion: @escaping (Result<WeatherRecord, ServiceError>) -> ()) {
@@ -91,8 +88,8 @@ class WeatherService: ObservableObject {
         guard let APIkey = self.OpenWeatherAPIkey else { completion(.failure(ServiceError.noAPIkeyprovided)); return }
         let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(cityNameReformatted)&appid=\(APIkey)&units=metric")
 
-        let networkTask: URLSessionDataTask = URLSession.shared.dataTask(with: url!) { data, response, error in
-            guard let data = data else { completion(.failure(ServiceError.wrongData));return }
+        AF.request(url!).response { response in
+            guard let data = response.data else { completion(.failure(ServiceError.wrongData));return }
             var record: WeatherRecord?
             do {
                 let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
@@ -127,10 +124,6 @@ class WeatherService: ObservableObject {
                 }
                 NSLog("Error in read(from:ofType:) domain= \(error.domain), description= \(error.localizedDescription)")
             }
-        }
-        
-        DispatchQueue.global(qos: .background).async {
-            networkTask.resume()
         }
     }
     
