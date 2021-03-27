@@ -135,9 +135,8 @@ class WeatherService: ObservableObject {
         print(url!)
         print("Long: \(coordinates.longitude), Lat: \(coordinates.latitude)")
 
-        let networkTask: URLSessionDataTask = URLSession.shared.dataTask(with: url!) {
-            (data, response, error) in
-            guard let data = data else { return }
+        AF.request(url!).response { response in
+            guard let data = response.data else { return }
             do {
                 let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
                 if (decoded.current?.temp != nil) {
@@ -155,10 +154,6 @@ class WeatherService: ObservableObject {
             } catch let error as NSError {
                 NSLog("Error in read(from:ofType:) domain= \(error.domain), description= \(error.localizedDescription)")
             }
-        }
-        
-        DispatchQueue.global(qos: .background).async {
-            networkTask.resume()
         }
     }
     
