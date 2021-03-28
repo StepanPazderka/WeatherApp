@@ -32,6 +32,7 @@ extension ServiceError: LocalizedError {
 
 class WeatherService: ObservableObject {
     @Published var country = ""
+    let backgroundQueue = DispatchQueue(label: "WeatherService", qos: .background)
     
     var OpenWeatherAPIkey: String? {
         let dir = Bundle.main.path(forResource: "key", ofType: "txt")
@@ -54,7 +55,7 @@ class WeatherService: ObservableObject {
         
         guard url != nil else { return }
 
-        AF.request(url!).response { response in
+        AF.request(url!).response(queue: backgroundQueue) { response in
             if response.error != nil {
                 print(response.error!)
             }
@@ -88,7 +89,7 @@ class WeatherService: ObservableObject {
         guard let APIkey = self.OpenWeatherAPIkey else { completion(.failure(ServiceError.noAPIkeyprovided)); return }
         let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(cityNameReformatted)&appid=\(APIkey)&units=metric")
 
-        AF.request(url!).response { response in
+        AF.request(url!).response(queue: backgroundQueue) { response in
             guard let data = response.data else { completion(.failure(ServiceError.wrongData));return }
             var record: WeatherRecord?
             do {
@@ -135,7 +136,7 @@ class WeatherService: ObservableObject {
         print(url!)
         print("Long: \(coordinates.longitude), Lat: \(coordinates.latitude)")
 
-        AF.request(url!).response { response in
+        AF.request(url!).response(queue: backgroundQueue) { response in
             guard let data = response.data else { return }
             do {
                 let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
