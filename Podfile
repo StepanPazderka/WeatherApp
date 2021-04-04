@@ -7,4 +7,5 @@ target 'WeatherApp' do
 
   # Pods for WeatherApp
   pod 'Alamofire', '~> 5.2'
+  pod 'Swinject'
 end

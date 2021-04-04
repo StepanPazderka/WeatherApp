@@ -8,42 +8,41 @@
 import SwiftUI
 import Foundation
 import MapKit
+import Swinject
 
 struct ContentView: View {
-    @ObservedObject var weatherManager = WeatherManager()
-    @ObservedObject var locationManager = LocationManager()
+    @ObservedObject var ViewModel =  ContainerBuilder.buildContainer().resolve(ContentViewModel.self)!
     
     @State var city: String = ""
     @State var country: String = ""
     @State var showingAlert: Bool = false
-    
     @State private var fontSize: CGFloat = 32
     
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                Map(coordinateRegion: $weatherManager.MapViewCoordinates, interactionModes: .all, showsUserLocation: true)
-                    .onChange(of: weatherManager.MapViewCoordinates) { coord in
-                        weatherManager.calculateTemperatureForCurrentLocation(currentCoordinates: weatherManager.MapViewCoordinates)
+                Map(coordinateRegion: $ViewModel.MapViewCoords, interactionModes: .all, showsUserLocation: true)
+                    .onChange(of: ViewModel.MapViewCoords) { coord in
+                        ViewModel.mapViewChanged()
                     }
                 VStack {
                     Spacer()
                     HStack(alignment: .center) {
-                        Text("\(self.weatherManager.currentLocationTemp)")
+                        Text("\(self.ViewModel.CurrentLocationTemperature)")
                             .kerning(0)
                             .tracking(1)
                             .fontWeight(.bold)
                             .padding()
                             .lineLimit(1)
                             .frame(width: 235, height: 40, alignment: Alignment.trailing)
-                        Text("\(self.weatherManager.countryFlag)")
+                        Text("\(self.ViewModel.currentCountryFlag)")
                             .frame(width: 60, height: 40, alignment: Alignment.leading)
                         }
                     .shadow(color: Color.black, radius: 55)
                     .font(.system(size: 40))
                     .padding(.bottom, 10)
                     TextField("Pick city to show", text: $city, onCommit: {
-                        weatherManager.getWeatherAt(city: city)
+                        ViewModel.getWeatherAt(city: city)
                     })
                     .modifier(ClearButton(text: $city))
                     .padding()
@@ -54,8 +53,8 @@ struct ContentView: View {
                     .keyboardResponsive()
                 }
                 .padding(EdgeInsets(top: 0, leading: 20, bottom: proxy.safeAreaInsets.bottom+50, trailing: 20))
-                .alert(isPresented: $weatherManager.alertRaised) { () -> Alert in
-                    Alert(title: Text(weatherManager.alertDescription))
+                .alert(isPresented: $ViewModel.isAlertRaised) { () -> Alert in
+                    Alert(title: Text(ViewModel.alertDescription))
                 }
             }
             .ignoresSafeArea()
