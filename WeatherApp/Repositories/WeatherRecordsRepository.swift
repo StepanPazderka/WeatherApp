@@ -73,11 +73,8 @@ protocol WeatherRecordsRepository {
                 self.addWeatherRecord(record: record)
                 completion(result)
             case .failure(let error):
-                DispatchQueue.main.async {
-                    
-                    print("Error: \(error)")
-    //                self.chosenCity = ""
-                }
+                print("Error: \(error)")
+                completion(.failure(error))
             }
         }
     }

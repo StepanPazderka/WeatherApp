@@ -47,6 +47,24 @@ class CalculateCurrentLocationWeatherUseCase {
             }
         }
     }
+    
+    func addWeatherRecordsInGrid(latitudeModulo: Int, longitudeModulo: Int) {
+        var iterator = 0
+        for latitude in -90...90 {
+            if latitude % latitudeModulo == 0 {
+                iterator += 1
+                print("Divison of latitude happened \(latitude)")
+                for longitude in -180...180 {
+                    if longitude % longitudeModulo == 0 {
+                        iterator += 1
+                        print("Divison of longitude happened \(longitude)")
+                        repository.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: Double(latitude), longitude: Double(longitude))) {_ in }
+                    }
+                }
+            }
+        }
+        print("API has been called \(iterator) times")
+    }
         
     func getDistanceTo(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double {
         let currentCoordinate: CLLocationCoordinate2D = to

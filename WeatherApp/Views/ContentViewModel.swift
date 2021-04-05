@@ -23,39 +23,13 @@ class ContentViewModel: ObservableObject {
     init(repository: WeatherRecordsRepository, useCase: CalculateCurrentLocationWeatherUseCase) {
         self.repository = repository
         self.useCase = useCase
-        addWeatherRecordsInGrid(latitudeModulo: 45, longitudeModulo: 40)
-        
-        
+        useCase.addWeatherRecordsInGrid(latitudeModulo: 45, longitudeModulo: 40)
     }
     
     func mapViewChanged() {
         self.useCase.calculateTemperatureForCurrentLocation(currentCoordinates: MapViewCoords.center) { calculatedTemperature in
             self.CurrentLocationTemperature = String.localizedStringWithFormat("%.2f °C", calculatedTemperature)
         }
-        
-//        if OrdereredList[0].distance > 0.02 {
-//            self.currentCountryFlag = OrdereredList[0].flag
-//        } else {
-//            self.currentCountryFlag = ""
-//        }
-    }
-    
-    func addWeatherRecordsInGrid(latitudeModulo: Int, longitudeModulo: Int) {
-        var iterator = 0
-        for latitude in -90...90 {
-            if latitude % latitudeModulo == 0 {
-                iterator += 1
-                print("Divison of latitude happened \(latitude)")
-                for longitude in -180...180 {
-                    if longitude % longitudeModulo == 0 {
-                        iterator += 1
-                        print("Divison of longitude happened \(longitude)")
-                        self.getWeatherAt(coordinates: CLLocationCoordinate2D(latitude: Double(latitude), longitude: Double(longitude)))
-                    }
-                }
-            }
-        }
-        print("API has been called \(iterator) times")
     }
     
     func getWeatherAt(city: String) {
@@ -73,6 +47,10 @@ class ContentViewModel: ObservableObject {
                 else if error == .wrongData {
                     self.isAlertRaised = true
                     self.alertDescription = "Request couldn't be completed. Are you connected to the internet?"
+                }
+                else if error == .accountBlocked {
+                    self.isAlertRaised = true
+                    self.alertDescription = "Account blocked"
                 }
             }
         }
