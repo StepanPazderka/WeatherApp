@@ -64,6 +64,7 @@ class ContentViewModel: ObservableObject {
             .store(in: &subscriptions)
     }
     
+    //TOM: Prosim review
     func getWeatherAt(coordinates: CLLocationCoordinate2D) {
         repository.getWeatherBy(coordinates: coordinates)
             .sink(receiveCompletion: { result in
