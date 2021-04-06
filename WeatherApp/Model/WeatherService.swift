@@ -8,6 +8,7 @@
 import Foundation
 import MapKit
 import Alamofire
+import Combine
 
 enum ServiceError: Error {
     case cityNotFound
@@ -16,7 +17,8 @@ enum ServiceError: Error {
     case unableToComplete
     case accountBlocked
     case noAPIkeyprovided
-    case wrongData
+    case errorWith(description: String)
+    case wrongURL
 }
 
 extension ServiceError: LocalizedError {
@@ -83,77 +85,83 @@ class WeatherService: ObservableObject {
         }
     }
     
-    func getWeatherBy(city: String, completion: @escaping (Result<WeatherRecord, ServiceError>) -> ()) {
+    func getWeatherBy(city: String) -> Just<Result<WeatherRecord, ServiceError>> {
+        var returnValue: Just<Result<WeatherRecord, ServiceError>>!
+        
         let cityNameReformatted = (city as NSString).replacingOccurrences(of: " ", with: "+").lowercased()
         
-        guard let APIkey = self.OpenWeatherAPIkey else { completion(.failure(ServiceError.noAPIkeyprovided)); return }
+        returnValue = .init(.success(WeatherRecord(temperature: 2.0, date: Date(), coordinates: CLLocationCoordinate2D(latitude: 20.0, longitude: 10.0), distance: 20.0, flag: "CZ")))
+        
+        guard let APIkey = self.OpenWeatherAPIkey else { return .init(.failure(ServiceError.noAPIkeyprovided)) }
         let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(cityNameReformatted)&appid=\(APIkey)&units=metric")
-
-        AF.request(url!).response(queue: backgroundQueue) { response in
-            guard let data = response.data else { completion(.failure(ServiceError.wrongData));return }
-            var record: WeatherRecord?
-            do {
-                let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
-                if (decoded.coord?.lat != nil) {
-                    DispatchQueue.main.async {
-                        record = WeatherRecord(temperature: Float(decoded.main!.temp), date: Date(), coordinates: CLLocationCoordinate2D(latitude: decoded.coord!.lat, longitude: decoded.coord!.lon), distance: 0.0, flag: self.GetFlagCodeToEmoji(country: decoded.sys!.country))
-                        completion(.success(record!))
-                    }
-                } else if (decoded.message != nil) {
-                    print("Message: \(decoded.message!)")
-                        if (String(describing: decoded.message!).contains("Your account is temporary blocked") == true) {
-                            DispatchQueue.main.async {
-                                completion(.failure(.accountBlocked))
-                            }
-                        }
-                    
-                        if String(describing: decoded.message!).contains("city not found") {
-                            completion(.failure(.cityNotFound))
-                        }
-                        
-                        if (decoded.message! != "Nothing to geocode") || String(describing: decoded.message!).contains("Your account is temporary blocked") != false {
-                            
-                        }
-                } else {
-                    DispatchQueue.main.async {
-                        completion(.failure(.cityNotFound))
-                    }
-                }
-            } catch let error as NSError {
-                DispatchQueue.main.async {
-                    completion(.failure(.cityNotFound))
-                }
-                NSLog("Error in read(from:ofType:) domain= \(error.domain), description= \(error.localizedDescription)")
-            }
-        }
+//
+//        AF.request(url!).response(queue: backgroundQueue) { response in
+//            guard let data = response.data else { returnValue = .init(.failure(ServiceError.wrongData)) }
+//            var record: WeatherRecord?
+//            do {
+//                let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
+//                if (decoded.coord?.lat != nil) {
+//                    DispatchQueue.main.async {
+//                        record = WeatherRecord(temperature: Float(decoded.main!.temp), date: Date(), coordinates: CLLocationCoordinate2D(latitude: decoded.coord!.lat, longitude: decoded.coord!.lon), distance: 0.0, flag: self.GetFlagCodeToEmoji(country: decoded.sys!.country))
+//                        returnValue = .success(record!)
+//                    }
+//                } else if (decoded.message != nil) {
+//                    print("Message: \(decoded.message!)")
+//                        if (String(describing: decoded.message!).contains("Your account is temporary blocked") == true) {
+//                            DispatchQueue.main.async {
+//                                returnValue = .failure(.accountBlocked)
+//                            }
+//                        }
+//
+//                        if String(describing: decoded.message!).contains("city not found") {
+//                            returnValue = .failure(.cityNotFound)
+//                        }
+//
+//                        if (decoded.message! != "Nothing to geocode") || String(describing: decoded.message!).contains("Your account is temporary blocked") != false {
+//
+//                        }
+//                } else {
+//                    DispatchQueue.main.async {
+//                        returnValue = .init(.failure(.cityNotFound))
+//                    }
+//                }
+//            } catch let error as ServiceError {
+//                DispatchQueue.main.async {
+//                    returnValue = .init(.failure(error))
+//                }
+//                NSLog("Error in read(from:ofType:) domain= \(error.domain), description= \(error.localizedDescription)")
+//            }
+//        }
+        
+        return returnValue
     }
     
-    func getWeatherBy(coordinates: CLLocationCoordinate2D,  completion: @escaping (Result<WeatherRecord, ServiceError>) -> ()) {
-        guard let APIkey = self.OpenWeatherAPIkey else { completion(.failure(ServiceError.noAPIkeyprovided)); return }
+    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> Deferred<Future<WeatherRecord, ServiceError>> {
+        return Deferred {
+            Future<WeatherRecord, ServiceError> { promise in
+                guard let APIkey = self.OpenWeatherAPIkey else { return promise(.failure(.noAPIkeyprovided)) }
 
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/onecall?lat=\(coordinates.latitude)&lon=\(coordinates.longitude)&appid=\(APIkey)&units=metric")
-        guard url != nil else { return }
-        print(url!)
-        print("Long: \(coordinates.longitude), Lat: \(coordinates.latitude)")
+                let url = URL(string: "https://api.openweathermap.org/data/2.5/onecall?lat=\(coordinates.latitude)&lon=\(coordinates.longitude)&appid=\(APIkey)&units=metric")
 
-        AF.request(url!).response(queue: backgroundQueue) { response in
-            guard let data = response.data else { return }
-            do {
-                let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
-                if (decoded.current?.temp != nil) {
-                    DispatchQueue.main.async {
-                        let record = WeatherRecord(temperature: decoded.current!.temp!, date: Date(), coordinates: CLLocationCoordinate2DMake(coordinates.latitude, coordinates.longitude), distance: 0.0, flag: "")
-                        completion(.success(record))
+                guard url != nil else { return promise(.failure(.wrongURL)) }
+
+                AF.request(url!).response(queue: self.backgroundQueue) { response in
+                    guard let data = response.data else { return }
+                    do {
+                        let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
+                        if (decoded.current?.temp != nil) {
+                            let record = WeatherRecord(temperature: decoded.current!.temp!, date: Date(), coordinates: CLLocationCoordinate2DMake(coordinates.latitude, coordinates.longitude), distance: 0.0, flag: "")
+                            promise(.success(record))
+                        }
+
+                        if let message = decoded.message {
+                            let error: ServiceError = .errorWith(description: message)
+                            promise(.failure(error))
+                        }
+                    } catch let error as NSError {
+                        NSLog("Error in read(from:ofType:) domain= \(error.domain), description= \(error.localizedDescription)")
                     }
                 }
-
-                if (decoded.message != nil) {
-                    DispatchQueue.main.async {
-                        completion(.failure(ServiceError.unableToComplete))
-                    }
-                }
-            } catch let error as NSError {
-                NSLog("Error in read(from:ofType:) domain= \(error.domain), description= \(error.localizedDescription)")
             }
         }
     }

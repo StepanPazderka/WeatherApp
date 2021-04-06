@@ -6,13 +6,14 @@
 //
 
 import Foundation
+import Combine
 import MapKit
 
 protocol WeatherRecordsRepository {
     var records: [WeatherRecord] { get set }
     
-    func getWeatherBy(coordinates: CLLocationCoordinate2D, completion: @escaping ((Result<WeatherRecord, ServiceError>) -> Void))
-    func getWeatherBy(city: String, completion: @escaping ((Result<WeatherRecord, ServiceError>) -> Void))
+    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> Deferred<Future<WeatherRecord, ServiceError>>
+    func getWeatherBy(city: String) -> Just<Result<WeatherRecord, ServiceError>>
     func updateWeatherRecords()
 }
 
@@ -26,15 +27,12 @@ protocol WeatherRecordsRepository {
         Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateWeatherRecords), userInfo: nil, repeats: true)
     }
     
-    func getWeatherBy(coordinates: CLLocationCoordinate2D, completion: @escaping (Result<WeatherRecord, ServiceError>) -> Void) {
-        service.getWeatherBy(coordinates: coordinates) { result in
-            switch result {
-            case .success(_):
-                completion(result)
-            case .failure(let error):
-                print("Could not have obtained the coordinates \(error)")
-            }
-        }
+    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> Deferred<Future<WeatherRecord, ServiceError>> {
+        service.getWeatherBy(coordinates: coordinates)
+    }
+    
+    func getWeatherBy(city: String) -> Just<Result<WeatherRecord, ServiceError>> {
+        service.getWeatherBy(city: city)
     }
     
     func loadWeatherRecord(coordinates: CLLocationCoordinate2D) -> WeatherRecord?  {
@@ -66,28 +64,13 @@ protocol WeatherRecordsRepository {
         records.append(roundedRecord)
     }
     
-    func getWeatherBy(city: String, completion: @escaping (Result<WeatherRecord, ServiceError>) -> Void) {
-        service.getWeatherBy(city: city) { result in
-            switch result {
-            case .success(let record):
-                self.addWeatherRecord(record: record)
-                completion(result)
-            case .failure(let error):
-                print("Error: \(error)")
-                completion(.failure(error))
-            }
-        }
-    }
-    
     @objc func updateWeatherRecords() {
         for record in records {
             let currentDate = Date()
             
             if (record.date - currentDate) > 120 {
                 print("\(record) is older than two minutes, will be updated")
-                self.getWeatherBy(coordinates: record.coordinates) { result in
-                    
-                }
+                self.getWeatherBy(coordinates: record.coordinates)
             }
         }
     }

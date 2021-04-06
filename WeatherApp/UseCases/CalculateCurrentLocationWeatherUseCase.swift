@@ -58,7 +58,7 @@ class CalculateCurrentLocationWeatherUseCase {
                     if longitude % longitudeModulo == 0 {
                         iterator += 1
                         print("Divison of longitude happened \(longitude)")
-                        repository.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: Double(latitude), longitude: Double(longitude))) {_ in }
+                        repository.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: Double(latitude), longitude: Double(longitude)))
                     }
                 }
             }
