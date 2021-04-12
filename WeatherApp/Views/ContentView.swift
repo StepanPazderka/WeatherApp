@@ -12,17 +12,17 @@ import Swinject
 
 struct ContentView: View {
     @ObservedObject var ViewModel =  ContainerBuilder.buildContainer().resolve(ContentViewModel.self)!
-    
+
     @State var city: String = ""
     @State var country: String = ""
     @State var showingAlert: Bool = false
     @State private var fontSize: CGFloat = 32
-    
+
     var body: some View {
         GeometryReader { proxy in
             ZStack {
                 Map(coordinateRegion: $ViewModel.MapViewCoords, interactionModes: .all, showsUserLocation: true)
-                    .onChange(of: ViewModel.MapViewCoords) { coord in
+                    .onChange(of: ViewModel.MapViewCoords) { _ in
                         ViewModel.mapViewChanged()
                     }
                 VStack {
@@ -62,23 +62,17 @@ struct ContentView: View {
     }
 }
 
-struct ClearButton: ViewModifier
-{
+struct ClearButton: ViewModifier {
     @Binding var text: String
 
-    public func body(content: Content) -> some View
-    {
-        ZStack(alignment: .trailing)
-        {
+    public func body(content: Content) -> some View {
+        ZStack(alignment: .trailing) {
             content
 
-            if !text.isEmpty
-            {
-                Button(action:
-                {
-                    self.text = ""
-                })
-                {
+            if !text.isEmpty {
+                Button(action: {
+                    self.text.removeAll()
+                }) {
                     Image(systemName: "delete.left")
                         .foregroundColor(Color(UIColor.opaqueSeparator))
                 }

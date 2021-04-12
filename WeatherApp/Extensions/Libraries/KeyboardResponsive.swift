@@ -22,7 +22,7 @@ struct KeyboardResponsiveModifier: ViewModifier {
           self.offset = height - (bottomInset ?? 0)
         }
 
-        NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { notif in
+        NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
           self.offset = 0
         }
     }

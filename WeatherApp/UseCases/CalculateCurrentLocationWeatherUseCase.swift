@@ -7,21 +7,24 @@
 
 import Foundation
 import MapKit
+import Combine
 
 class CalculateCurrentLocationWeatherUseCase {
+    private var subscriptions: Set<AnyCancellable> = []
     var repository: WeatherRecordsRepository
     
     init(repository: WeatherRecordsRepository) {
         self.repository = repository
     }
     
-    func calculateTemperatureForCurrentLocation(currentCoordinates: CLLocationCoordinate2D, completion: @escaping ((Float)->()?)) {
+    func calculateTemperatureForCurrentLocation(currentCoordinates: CLLocationCoordinate2D) -> Just<Float> {
+        var returnValue: Float = 0
         DispatchQueue.global(qos: .userInitiated).async {
             for index in self.repository.records.indices {
                 let distance = self.getDistanceTo(from: CLLocationCoordinate2D(latitude: CLLocationDegrees(self.repository.records[index].coordinates.latitude), longitude: CLLocationDegrees(self.repository.records[index].coordinates.longitude)), to: currentCoordinates)
-
+                
                 self.repository.records[index].distance = Float(distance)
-                    
+                
                 DispatchQueue.main.async {
                     print("Record #\(index+1): \(self.repository.records[index].temperature) Distance: \(self.repository.records[index].distance)")
                 }
@@ -35,18 +38,18 @@ class CalculateCurrentLocationWeatherUseCase {
                 $0.distance > $1.distance
             }
             
-            DispatchQueue.main.async {
-                if self.repository.records.count >= 3 {
-                    let summedTemperature = (OrdereredList[0].distance * OrdereredList[0].temperature) + (OrdereredList[1].distance * OrdereredList[1].temperature) + (OrdereredList[2].distance * OrdereredList[2].temperature)
-                    let summedDistance = OrdereredList[0].distance + OrdereredList[1].distance + OrdereredList[2].distance
-                    let WeightedTemperature = summedTemperature / summedDistance
-                    
-                    print("Calculated temp: \(WeightedTemperature)")
-                    completion(WeightedTemperature)
-                }
+            if self.repository.records.count >= 3 {
+                let summedTemperature = (OrdereredList[0].distance * OrdereredList[0].temperature) + (OrdereredList[1].distance * OrdereredList[1].temperature) + (OrdereredList[2].distance * OrdereredList[2].temperature)
+                let summedDistance = OrdereredList[0].distance + OrdereredList[1].distance + OrdereredList[2].distance
+                let WeightedTemperature = summedTemperature / summedDistance
+                
+                print("Calculated temp: \(WeightedTemperature)")
+                returnValue = WeightedTemperature
             }
         }
+        return Just(returnValue)
     }
+    
     
     func addWeatherRecordsInGrid(latitudeModulo: Int, longitudeModulo: Int) {
         var iterator = 0
@@ -58,14 +61,14 @@ class CalculateCurrentLocationWeatherUseCase {
                     if longitude % longitudeModulo == 0 {
                         iterator += 1
                         print("Divison of longitude happened \(longitude)")
-                        repository.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: Double(latitude), longitude: Double(longitude)))
+                        repository.getWeatherBy(coordinates: CLLocationCoordinate2D(latitude: Double(latitude), longitude: Double(longitude))).sink(receiveCompletion: { _ in }, receiveValue: { _ in }).store(in: &subscriptions)
                     }
                 }
             }
         }
         print("API has been called \(iterator) times")
     }
-        
+    
     func getDistanceTo(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double {
         let currentCoordinate: CLLocationCoordinate2D = to
         

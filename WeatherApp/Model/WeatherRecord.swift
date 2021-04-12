@@ -27,3 +27,10 @@ extension WeatherRecord: Equatable {
     }
 }
 
+extension WeatherRecord {
+    var rounded: WeatherRecord {
+        let roundedCoords = CLLocationCoordinate2D(latitude: self.coordinates.latitude.rounded(), longitude: self.coordinates.longitude.rounded())
+        let newWeatherRecord = WeatherRecord(temperature: self.temperature, date: self.date, coordinates: roundedCoords, distance: self.distance, flag: self.flag)
+        return newWeatherRecord
+    }
+}

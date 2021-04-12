@@ -1,4 +1,3 @@
-
 import Foundation
 
 struct CountryData: Codable {
@@ -8,25 +7,25 @@ struct CountryData: Codable {
 
 enum ChangeableType: Codable {
     func encode(to encoder: Encoder) throws {
-        
+
     }
-    
+
     case double(Double), string(String)
-    
+
     init(from decoder: Decoder) throws {
         if let double = try? decoder.singleValueContainer().decode(Double.self) {
             self = .double(double)
             return
         }
-        
+
         if let string = try? decoder.singleValueContainer().decode(String.self) {
             self = .string(string)
             return
         }
-        
+
         throw ChangeableType.missingValue
     }
-    
+
     enum ChangeableType: Error {
         case missingValue
     }
@@ -46,7 +45,7 @@ struct WeatherData: Codable {
     let timezone: ChangeableType?
     let id: Int?
     let name: String?
-    let cod: ChangeableType?
+    let cod: Int?
     let message: String?
     let current: Current?
 }

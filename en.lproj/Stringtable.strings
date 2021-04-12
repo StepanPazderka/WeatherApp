@@ -1,0 +1,11 @@
+/* 
+  Strings.strings
+  WeatherApp
+
+  Created by Štěpán Pazderka on 08.04.2021.
+  
+*/
+"city not found" = "city not found";
+"cant find city called" = "Can't find city called ";
+"service is unavailable, becasuse overhelmed API" = "Service is unavailable, because API have been overhelmed with requstests. \n\nPlease try again later.";
+

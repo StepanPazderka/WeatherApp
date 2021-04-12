@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 // Extending Date class to be able to divide and get TimeInterval result
 extension Date {
     /// Allows us to get TimeInterval between two dates
