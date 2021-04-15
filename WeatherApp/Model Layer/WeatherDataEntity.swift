@@ -7,7 +7,7 @@
 
 import Foundation
 import MapKit
-import RealmSwift
+//import RealmSwift
 
 protocol WeatherDataEntity {
     var temp: Float { get }

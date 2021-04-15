@@ -1,28 +1,43 @@
 PODS:
   - Alamofire (5.4.2)
+  - CombineRealm (0.2.1):
+    - RealmSwift (~> 3.14)
   - R.swift (5.4.0):
     - R.swift.Library (~> 5.3.0)
   - R.swift.Library (5.3.0)
+  - Realm (3.21.0):
+    - Realm/Headers (= 3.21.0)
+  - Realm/Headers (3.21.0)
+  - RealmSwift (3.21.0):
+    - Realm (= 3.21.0)
   - Swinject (2.7.1)
 
 DEPENDENCIES:
   - Alamofire (~> 5.2)
+  - CombineRealm
   - R.swift
+  - Realm
   - Swinject
 
 SPEC REPOS:
   trunk:
     - Alamofire
+    - CombineRealm
     - R.swift
     - R.swift.Library
+    - Realm
+    - RealmSwift
     - Swinject
 
 SPEC CHECKSUMS:
   Alamofire: bfbc4c2fe5909b1d94fb4ef2277c6b3727ef5dae
+  CombineRealm: 41d5a0add7b5a1022dc1b3d2914e11dbedbd896f
   R.swift: c533450b0f7dc494e0993f5f1a1db925d84c3006
   R.swift.Library: 0fc583cb55a99e28901299cc451614cad1161962
+  Realm: 38e9dcb19104b58407167d99f70d4995f7c16023
+  RealmSwift: 3183cc1ad48378fbcd634311b22c0e6c44021152
   Swinject: ddf78b8486dd9b71a667b852cad919ab4484478e
 
-PODFILE CHECKSUM: 2962729cf63dba16a865883da946bdf3af6f0c79
+PODFILE CHECKSUM: 8e0e201b5dd265de750b30d59ac52f100a4a8b82
 
 COCOAPODS: 1.10.1

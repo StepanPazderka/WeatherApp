@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import RealmSwift
 import MapKit
 
 class WeatherDataDBEntity: Object, WeatherDataEntity {
@@ -52,6 +51,7 @@ class WeatherDataDBEntity: Object, WeatherDataEntity {
     }
     
     required init() {
+        super.init()
 //        fatalError("init() has not been implemented")
     }
 }
