@@ -7,7 +7,6 @@
 
 import Foundation
 
-private let container = ContainerBuilder.buildContainer()
 @propertyWrapper
 struct Registered<T> {
     let type: T.Type

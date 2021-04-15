@@ -1,4 +1,5 @@
 import Foundation
+import MapKit
 
 struct CountryData: Codable {
     let countryCode: String?
@@ -32,7 +33,8 @@ enum ChangeableType: Codable {
 }
 
 // MARK: - Welcome
-struct WeatherData: Codable {
+struct WeatherDataAPIEntity: Codable {
+
     let coord: Coord?
     let weather: [Weather]?
     let base: String?
@@ -42,12 +44,37 @@ struct WeatherData: Codable {
     let clouds: Clouds?
     let dt: Int?
     let sys: Sys?
-    let timezone: ChangeableType?
+    let timezone: Double?
     let id: Int?
     let name: String?
     let cod: Int?
     let message: String?
     let current: Current?
+    var date: Date = Date()
+}
+
+extension WeatherDataAPIEntity: Equatable {
+    static func == (lhs: WeatherDataAPIEntity, rhs: WeatherDataAPIEntity) -> Bool {
+        if (lhs.base == rhs.base) && (lhs.date == rhs.date) {
+            return true
+        }
+        return false
+    }
+}
+
+extension WeatherDataAPIEntity: WeatherDataEntity {
+
+    var temp: Float {
+        return Float(main?.temp ?? 0)
+    }
+    
+    var coordinates: CLLocationCoordinate2D {
+        return CLLocationCoordinate2D(latitude: coord?.lat ?? 0, longitude: coord?.lon ?? 0)
+    }
+    
+    var flag: String {
+        return sys?.country ?? String("")
+    }
 }
 
 struct Current: Codable {
@@ -60,7 +87,7 @@ struct Clouds: Codable {
 }
 
 // MARK: - Coord
-struct Coord: Codable {
+struct Coord: Codable, Equatable {
     let lon, lat: Double
 }
 

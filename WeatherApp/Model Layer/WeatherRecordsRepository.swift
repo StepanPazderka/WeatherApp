@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import MapKit
+import RxSwift
 
 protocol WeatherRecordsRepository {
     var records: [WeatherRecord] { get set }
@@ -16,16 +17,21 @@ protocol WeatherRecordsRepository {
     func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, ServiceError>
     func addWeatherRecord(record: WeatherRecord)
     func updateWeatherRecords()
+    func getAllWeatherRecords() -> Observable<[WeatherDataDBEntity]>
 }
 
-@objcMembers class WeatherRecordsRepositoryImpl: WeatherRecordsRepository {
+class WeatherRecordsRepositoryImpl: WeatherRecordsRepository {
     private var subscriptions: Set<AnyCancellable> = []
     private var service: WeatherService
-    internal var records: [WeatherRecord] = []
+    var records: [WeatherRecord] = []
 
     init(service: WeatherService) {
         self.service = service
         Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateWeatherRecords), userInfo: nil, repeats: true)
+    }
+    
+    func getAllWeatherRecords() -> Observable<[WeatherDataDBEntity]> {
+        service.getAllCachedData()
     }
 
     func getWeatherBy(coordinates: CLLocationCoordinate2D) -> AnyPublisher<WeatherRecord, ServiceError> {
@@ -55,7 +61,6 @@ protocol WeatherRecordsRepository {
 
     func addWeatherRecord(record: WeatherRecord) {
         print("Saving temp: \(record.temperature) on lat: \(record.coordinates.latitude) and long: \(record.coordinates.longitude)")
-        let roundedCoordinates = CLLocationCoordinate2D(latitude: record.coordinates.latitude.rounded(), longitude: record.coordinates.longitude.rounded())
 
         if let existingRecord = self.loadWeatherRecord(coordinates: record.coordinates) {
             if let index = records.firstIndex(of: existingRecord) {
@@ -65,17 +70,20 @@ protocol WeatherRecordsRepository {
             }
         }
 
+        print(record.rounded)
         records.append(record.rounded)
     }
 
-    func updateWeatherRecords() {
-        for record in records {
-            let currentDate = Date()
-
-            if (record.date - currentDate) > 120 {
-                print("\(record) is older than two minutes, will be updated")
-                self.getWeatherBy(coordinates: record.coordinates)
+    @objc func updateWeatherRecords() {
+        service.getAllCachedData().subscribe(onNext: { records in
+            records.filter({ entity in
+                if (entity.date - Date()) > 120 {
+                    return true
+                }
+                return false
+            }).forEach { entity in
+                self.service.getWeatherBy(coordinates: entity.coordinates).sink(receiveCompletion: { _ in }, receiveValue: { _ in }).store(in: &self.subscriptions)
             }
-        }
+        }).dispose()
     }
 }

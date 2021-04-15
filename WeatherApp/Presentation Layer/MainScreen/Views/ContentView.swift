@@ -11,12 +11,18 @@ import MapKit
 import Swinject
 
 struct ContentView: View {
-    @ObservedObject var ViewModel =  ContainerBuilder.buildContainer().resolve(ContentViewModel.self)!
+    init(viewModel: ContentViewModel) {
+        ContainerBuilder.buildContainer()
+        ViewModel = container.resolve(ContentViewModel.self)!
+    }
+    
+    @ObservedObject var ViewModel: ContentViewModel
 
     @State var city: String = ""
     @State var country: String = ""
     @State var showingAlert: Bool = false
     @State private var fontSize: CGFloat = 32
+    
 
     var body: some View {
         GeometryReader { proxy in
@@ -84,6 +90,6 @@ struct ClearButton: ViewModifier {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        ContentView(viewModel: container.resolve(ContentViewModel.self)!)
     }
 }

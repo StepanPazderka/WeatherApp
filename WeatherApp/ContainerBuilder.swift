@@ -8,12 +8,27 @@
 import Foundation
 import Swinject
 
-class ContainerBuilder {
-    static func buildContainer() -> Container {
-        let container: Container = Container.init(defaultObjectScope: .transient)
+let container: Container = Container.init(defaultObjectScope: .container)
 
-        container.register(WeatherService.self) { _ in
-            WeatherServiceImpl()
+class ContainerBuilder {
+
+    // MARK: - Build
+    static func buildContainer() -> Container {
+        
+        withUnsafePointer(to: self) {
+            print("Container Address: \($0)")
+        }
+
+        container.register(WeatherDataCache.self) { _ in
+            WeatherDataCache()
+        }
+
+        container.register(WeatherService.self) { r in
+            WeatherServiceImpl(cache: r.resolve(WeatherDataCache.self)!)
+        }
+        
+        container.register(WeatherRecordsRepository.self) { r in
+            WeatherRecordsRepositoryImpl(service: r.resolve(WeatherService.self)!)
         }
 
         container.register(CalculateCurrentLocationWeatherUseCase.self) { r in
@@ -22,10 +37,6 @@ class ContainerBuilder {
 
         container.register(ContentViewModel.self) { r in
             ContentViewModel(repository: r.resolve(WeatherRecordsRepository.self)!, useCase: r.resolve(CalculateCurrentLocationWeatherUseCase.self)!)
-        }
-
-        container.register(WeatherRecordsRepository.self) { r in
-            WeatherRecordsRepositoryImpl(service: r.resolve(WeatherService.self)!)
         }
 
         return container

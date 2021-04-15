@@ -9,6 +9,7 @@ import Foundation
 import MapKit
 import Alamofire
 import Combine
+import RxSwift
 
 enum ServiceError: Error {
     case cityNotFound
@@ -38,11 +39,16 @@ protocol WeatherService {
     func getCountryCodeBy(longitude: Double, latitude: Double) -> Future<String, ServiceError>
     func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, ServiceError>
     func getWeatherBy(coordinates: CLLocationCoordinate2D) -> Deferred<Future<WeatherRecord, ServiceError>>
+    func getAllCachedData() -> Observable<[WeatherDataDBEntity]>
 }
 
 class WeatherServiceImpl: WeatherService {
-    let backgroundQueue = DispatchQueue(label: "WeatherService", qos: .background)
 
+    // MARK: - Properties
+    let baseURL = URLComponents(string: "https://api.openweathermap.org")!
+    let backgroundQueue = DispatchQueue(label: "WeatherService", qos: .background)
+    let defaults = UserDefaults.standard
+    private var cache: WeatherDataCache
     var OpenWeatherAPIkey: String? {
         let dir = Bundle.main.path(forResource: "key", ofType: "txt")
         do {
@@ -57,6 +63,15 @@ class WeatherServiceImpl: WeatherService {
         return String()
     }
 
+    // MARK: - Init
+    internal init(cache: WeatherDataCache) {
+        self.cache = cache
+    }
+
+    func getAllCachedData() -> Observable<[WeatherDataDBEntity]> {
+        self.cache.getAll()
+    }
+    
     func getCountryCodeBy(longitude: Double, latitude: Double) -> Future<String, ServiceError> {
         Future<String, ServiceError> { promise in
             let url = URL(string: "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=\(latitude)&longitude=\(longitude)")
@@ -71,7 +86,7 @@ class WeatherServiceImpl: WeatherService {
                 guard let data = response.data else { return }
                 do {
                     let decoded = try JSONDecoder().decode(CountryData.self, from: data)
-
+                    
                     if decoded.countryCode != nil {
                         DispatchQueue.main.async {
                             print(decoded.countryCode!)
@@ -95,9 +110,10 @@ class WeatherServiceImpl: WeatherService {
     func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, ServiceError> {
         return Deferred {
             Future<WeatherRecord, ServiceError> { promise in
+
                 guard let APIkey = self.OpenWeatherAPIkey else { return promise(.failure(.noAPIkeyprovided)) }
                 let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(String(describing: city.reformated))&appid=\(APIkey)&units=metric")
-
+                
                 AF.request(url!).response(queue: self.backgroundQueue) { response in
                     if let error = response.error {
                         promise(.failure(.errorWith(description: error.localizedDescription)))
@@ -107,8 +123,10 @@ class WeatherServiceImpl: WeatherService {
                     guard let data = response.data else { return promise(.failure(.corruptData)) }
 
                     do {
-                        let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
+                        let decoded = try JSONDecoder().decode(WeatherDataAPIEntity.self, from: data)
+                        self.cache.add(decoded)
                         if decoded.coord?.lat != nil {
+                            self.cache.add(decoded)
                             DispatchQueue.main.async {
                                 let record = WeatherRecord(temperature: Float(decoded.main!.temp), date: Date(), coordinates: CLLocationCoordinate2D(latitude: decoded.coord!.lat, longitude: decoded.coord!.lon), distance: 0.0, flag: self.GetFlagCodeToEmoji(country: decoded.sys!.country))
                                 promise(.success(record))
@@ -144,13 +162,18 @@ class WeatherServiceImpl: WeatherService {
                 let url = URL(string: "https://api.openweathermap.org/data/2.5/onecall?lat=\(coordinates.latitude)&lon=\(coordinates.longitude)&appid=\(APIkey)&units=metric")
 
                 guard url != nil else { return promise(.failure(.wrongURL)) }
+                
+                if let cachedPost = self.cache.load(by: coordinates) {
+                    promise(.success(WeatherRecord(data: cachedPost)))
+                }
 
                 AF.request(url!).response(queue: self.backgroundQueue) { response in
                     guard let data = response.data else { return }
                     do {
-                        let decoded = try JSONDecoder().decode(WeatherData.self, from: data)
+                        let decoded = try JSONDecoder().decode(WeatherDataAPIEntity.self, from: data)
                         if decoded.current?.temp != nil {
                             let record = WeatherRecord(temperature: decoded.current!.temp!, date: Date(), coordinates: CLLocationCoordinate2DMake(coordinates.latitude, coordinates.longitude), distance: 0.0, flag: "")
+                            self.cache.add(decoded)
                             promise(.success(record))
                         }
 

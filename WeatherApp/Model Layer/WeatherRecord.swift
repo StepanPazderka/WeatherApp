@@ -14,6 +14,30 @@ struct WeatherRecord {
     var coordinates: CLLocationCoordinate2D
     var distance: Float
     var flag: String
+
+    init(data: WeatherDataAPIEntity) {
+        self.temperature = Float(data.main!.temp)
+        self.date = data.date
+        self.coordinates = CLLocationCoordinate2D(latitude: data.coord!.lat, longitude: data.coord!.lon)
+        self.distance = 0.0
+        self.flag = data.sys!.country
+    }
+    
+    init(data: WeatherDataDBEntity) {
+        self.temperature = Float(data.temp)
+        self.date = data.date
+        self.coordinates = CLLocationCoordinate2D(latitude: data.latitude, longitude: data.longitude)
+        self.distance = 0.0
+        self.flag = data.flag ?? String()
+    }
+
+    init(temperature: Float, date: Date, coordinates: CLLocationCoordinate2D, distance: Float, flag: String) {
+        self.temperature = temperature
+        self.date = date
+        self.coordinates = coordinates
+        self.distance = distance
+        self.flag = flag
+    }
 }
 
 struct Coordinates {

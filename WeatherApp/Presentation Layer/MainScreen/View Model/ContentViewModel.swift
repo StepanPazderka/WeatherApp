@@ -10,26 +10,31 @@ import CoreLocation
 import Combine
 import MapKit
 
-class ContentViewModel: ObservableObject {
+class ContentViewModel: ViewModel {
     private var subscriptions: Set<AnyCancellable> = []
 
     @Published var MapViewCoords = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 0, longitude: 0), span: MKCoordinateSpan(latitudeDelta: 50, longitudeDelta: 50))
-    @Published var CurrentLocationTemperature: String = String()
+    @Published var CurrentLocationTemperature: String = "0"
     @Published var isAlertRaised: Bool = false
-    @Published var alertDescription: String = ""
-    @Published var currentCity: String = ""
-    @Published var currentCountryFlag: String = ""
-    @Registered(type: WeatherRecordsRepository.self) private var repository: WeatherRecordsRepository
-    @Registered(type: CalculateCurrentLocationWeatherUseCase.self) private var useCase: CalculateCurrentLocationWeatherUseCase
+    @Published var alertDescription: String = String()
+    @Published var currentCity: String = String()
+    @Published var currentCountryFlag: String = String()
+
+    private var repository: WeatherRecordsRepository
+    private var useCase: CalculateCurrentLocationWeatherUseCase
 
     init(repository: WeatherRecordsRepository, useCase: CalculateCurrentLocationWeatherUseCase) {
-//        useCase.addWeatherRecordsInGrid(latitudeModulo: 45, longitudeModulo: 40)
+        self.repository = container.resolve(WeatherRecordsRepository.self)!
+        self.useCase = container.resolve(CalculateCurrentLocationWeatherUseCase.self)!
     }
 
     func mapViewChanged() {
-        self.useCase.calculateTemperatureForCurrentLocation(currentCoordinates: MapViewCoords.center).sink(receiveValue: { value in
-            self.CurrentLocationTemperature = String(describing: value)
-        }).store(in: &subscriptions)
+        self.useCase.calculateTemperatureForCurrentLocation(currentCoordinates: MapViewCoords.center)
+        .sink(receiveCompletion: { complete in }, receiveValue: { weightedTemperature in
+            self.CurrentLocationTemperature = String.localizedStringWithFormat("%.2f °C", weightedTemperature)
+            print(weightedTemperature)
+        })
+        .store(in: &subscriptions)
     }
 
     func getWeatherAt(city: String) {
@@ -69,9 +74,7 @@ class ContentViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     switch result {
                     case .finished:
-                        self.useCase.calculateTemperatureForCurrentLocation(currentCoordinates: self.MapViewCoords.center).sink(receiveValue: { value in
-                            self.CurrentLocationTemperature = String(describing: value)
-                        }).store(in: &self.subscriptions)
+                        self.useCase.calculateTemperatureForCurrentLocation(currentCoordinates: self.MapViewCoords.center).sink(receiveCompletion: { complete in }, receiveValue: { value in }).store(in: &self.subscriptions)
                     case .failure(let error):
                         self.isAlertRaised = true
                         switch error {
