@@ -7,10 +7,10 @@ target 'WeatherApp' do
 
   # Pods for WeatherApp
   pod 'Alamofire', '~> 5.2'
+  pod 'Combine-Realm'
   pod 'Swinject'
   pod 'R.swift'
   pod 'RealmSwift'
   pod 'RxSwift'
   pod 'Swinject'
 end
-
