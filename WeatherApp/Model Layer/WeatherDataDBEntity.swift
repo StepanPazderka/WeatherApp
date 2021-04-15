@@ -7,6 +7,7 @@
 
 import Foundation
 import MapKit
+import RealmSwift
 
 class WeatherDataDBEntity: Object, WeatherDataEntity {
     
