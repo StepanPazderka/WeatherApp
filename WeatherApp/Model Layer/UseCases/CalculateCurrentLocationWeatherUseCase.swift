@@ -33,9 +33,7 @@ class CalculateCurrentLocationWeatherUseCase {
                 print(error)
             }
         }, receiveValue: { value in
-            self.records = value.map { entry in
-                WeatherRecord(data: entry)
-            }
+            self.records = value
         }).store(in: &self.subscriptions)
     }
 

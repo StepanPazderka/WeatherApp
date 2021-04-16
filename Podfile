@@ -9,7 +9,6 @@ target 'WeatherApp' do
   pod 'Alamofire', '~> 5.2'
   pod 'Swinject'
   pod 'R.swift'
-  pod 'RealmSwift'
   pod 'RxSwift'
   pod 'Swinject'
 end

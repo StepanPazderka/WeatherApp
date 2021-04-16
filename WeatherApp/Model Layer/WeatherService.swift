@@ -36,9 +36,9 @@ extension ServiceError: LocalizedError {
 
 protocol WeatherService {
     var OpenWeatherAPIkey: String? { get }
-    func getCountryCodeBy(longitude: Double, latitude: Double) -> Future<String, ServiceError>
-    func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, ServiceError>
-    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> AnyPublisher<WeatherRecord, ServiceError>
+    func getCountryCodeBy(longitude: Double, latitude: Double) -> AnyPublisher<String, Error>
+    func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, Error>
+    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> AnyPublisher<WeatherRecord, Error>
     func getAllCachedData() -> AnyPublisher<[WeatherDataDBEntity], Error>
 }
 
@@ -72,8 +72,8 @@ class WeatherServiceImpl: WeatherService {
         self.cache.getAll()
     }
     
-    func getCountryCodeBy(longitude: Double, latitude: Double) -> Future<String, ServiceError> {
-        Future<String, ServiceError> { promise in
+    func getCountryCodeBy(longitude: Double, latitude: Double) -> AnyPublisher<String, Error> {
+        Future<String, Error> { promise in
             let url = URL(string: "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=\(latitude)&longitude=\(longitude)")
 
             guard url != nil else { return }
@@ -105,22 +105,23 @@ class WeatherServiceImpl: WeatherService {
                 }
             }
         }
+        .eraseToAnyPublisher()
     }
 
-    func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, ServiceError> {
+    func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, Error> {
         return Deferred {
-            Future<WeatherRecord, ServiceError> { promise in
+            Future<WeatherRecord, Error> { promise in
 
-                guard let APIkey = self.OpenWeatherAPIkey else { return promise(.failure(.noAPIkeyprovided)) }
+                guard let APIkey = self.OpenWeatherAPIkey else { return promise(.failure(ServiceError.noAPIkeyprovided)) }
                 let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?q=\(String(describing: city.reformated))&appid=\(APIkey)&units=metric")
                 
                 AF.request(url!).response(queue: self.backgroundQueue) { response in
                     if let error = response.error {
-                        promise(.failure(.errorWith(description: error.localizedDescription)))
+                        promise(.failure(ServiceError.errorWith(description: error.localizedDescription)))
                         return
                     }
 
-                    guard let data = response.data else { return promise(.failure(.corruptData)) }
+                    guard let data = response.data else { return promise(.failure(ServiceError.corruptData)) }
 
                     do {
                         let decoded = try JSONDecoder().decode(WeatherDataAPIEntity.self, from: data)
@@ -135,18 +136,18 @@ class WeatherServiceImpl: WeatherService {
                             print("Message: \(decoded.message!)")
                             if decoded.cod == 429 {
                                 DispatchQueue.main.async {
-                                    promise(.failure(.accountBlocked))
+                                    promise(.failure(ServiceError.accountBlocked))
                                 }
                             }
 
                             if String(describing: decoded.message!).contains(Localizable.cityNotFound()) {
-                                promise(.failure(.cityNotFound))
+                                promise(.failure(ServiceError.cityNotFound))
                             }
                         } else {
-                            promise(.failure(.cityNotFound))
+                            promise(.failure(ServiceError.cityNotFound))
                         }
                     } catch let error as NSError {
-                        promise(.failure(.errorWith(description: error.localizedDescription)))
+                        promise(.failure(ServiceError.errorWith(description: error.localizedDescription)))
                     }
                 }
             }
@@ -154,14 +155,14 @@ class WeatherServiceImpl: WeatherService {
         .eraseToAnyPublisher()
     }
 
-    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> AnyPublisher<WeatherRecord, ServiceError> {
+    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> AnyPublisher<WeatherRecord, Error> {
         return Deferred {
-            Future<WeatherRecord, ServiceError> { promise in
-                guard let APIkey = self.OpenWeatherAPIkey else { return promise(.failure(.noAPIkeyprovided)) }
+            Future<WeatherRecord, Error> { promise in
+                guard let APIkey = self.OpenWeatherAPIkey else { return promise(.failure(ServiceError.noAPIkeyprovided)) }
 
                 let url = URL(string: "https://api.openweathermap.org/data/2.5/onecall?lat=\(coordinates.latitude)&lon=\(coordinates.longitude)&appid=\(APIkey)&units=metric")
 
-                guard url != nil else { return promise(.failure(.wrongURL)) }
+                guard url != nil else { return promise(.failure(ServiceError.wrongURL)) }
                 
                 if let cachedPost = self.cache.load(by: coordinates) {
                     promise(.success(WeatherRecord(data: cachedPost)))
@@ -182,7 +183,7 @@ class WeatherServiceImpl: WeatherService {
                             promise(.failure(error))
                         }
                     } catch let error as NSError {
-                        promise(.failure(.errorWith(description: error.localizedDescription)))
+                        promise(.failure(ServiceError.errorWith(description: error.localizedDescription)))
                     }
                 }
             }

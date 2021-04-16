@@ -46,13 +46,13 @@ class ContentViewModel: ViewModel {
                     break
                 case .failure(let error):
                     switch error {
-                    case .cityNotFound:
+                    case ServiceError.cityNotFound:
                         self.isAlertRaised = true
                         self.alertDescription = "\(Localizable.cantFindCityCalled()) \(self.currentCity)"
-                    case .errorWith(let description):
+                    case ServiceError.errorWith(let description):
                         self.isAlertRaised = true
                         self.alertDescription = description
-                    case .accountBlocked:
+                    case ServiceError.accountBlocked:
                         self.isAlertRaised = true
                         self.alertDescription = Localizable.serviceIsUnavailableBecasuseOverhelmedAPI()
                     default:
@@ -77,11 +77,13 @@ class ContentViewModel: ViewModel {
                         self.useCase.calculateTemperatureForCurrentLocation(currentCoordinates: self.MapViewCoords.center).sink(receiveCompletion: { complete in }, receiveValue: { value in }).store(in: &self.subscriptions)
                     case .failure(let error):
                         self.isAlertRaised = true
-                        switch error {
-                        case .errorWith(let description):
-                            self.alertDescription = description
-                        default:
-                            self.alertDescription = "\(error)"
+                        if let error = error as? ServiceError {
+                            switch error {
+                            case .errorWith(let description):
+                                self.alertDescription = description
+                            default:
+                                self.alertDescription = "\(error)"
+                            }
                         }
                     }
                 }

@@ -3,18 +3,12 @@ PODS:
   - R.swift (5.4.0):
     - R.swift.Library (~> 5.3.0)
   - R.swift.Library (5.3.0)
-  - Realm (10.7.2):
-    - Realm/Headers (= 10.7.2)
-  - Realm/Headers (10.7.2)
-  - RealmSwift (10.7.2):
-    - Realm (= 10.7.2)
   - RxSwift (6.1.0)
   - Swinject (2.7.1)
 
 DEPENDENCIES:
   - Alamofire (~> 5.2)
   - R.swift
-  - RealmSwift
   - RxSwift
   - Swinject
 
@@ -23,8 +17,6 @@ SPEC REPOS:
     - Alamofire
     - R.swift
     - R.swift.Library
-    - Realm
-    - RealmSwift
     - RxSwift
     - Swinject
 
@@ -32,11 +24,9 @@ SPEC CHECKSUMS:
   Alamofire: bfbc4c2fe5909b1d94fb4ef2277c6b3727ef5dae
   R.swift: c533450b0f7dc494e0993f5f1a1db925d84c3006
   R.swift.Library: 0fc583cb55a99e28901299cc451614cad1161962
-  Realm: e523da9ade306c5ae87e85dc09fdef148d3e1cc1
-  RealmSwift: 4f6758c3adbdcc87f7b7777107226532a077f61c
   RxSwift: a834e5c538e89eca0cae86f403f4fbf0336786ce
   Swinject: ddf78b8486dd9b71a667b852cad919ab4484478e
 
-PODFILE CHECKSUM: 47a2ae07b298ad079604309e77327881000cd866
+PODFILE CHECKSUM: a9b407c8d04b66e2532fde12aa7ed31915679b6b
 
 COCOAPODS: 1.10.1

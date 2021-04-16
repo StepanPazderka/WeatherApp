@@ -8,22 +8,20 @@
 import Foundation
 import Combine
 import MapKit
-import Realm
-import RealmSwift
-import RxSwift
 import CombineDatabase
 
 protocol WeatherRecordsRepository {
     var records: [WeatherRecord] { get set }
 
-    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> AnyPublisher<WeatherRecord, ServiceError>
-    func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, ServiceError>
+    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> AnyPublisher<WeatherRecord, Error>
+    func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, Error>
     func addWeatherRecord(record: WeatherRecord)
     func updateWeatherRecords()
-    func getAllWeatherRecords() -> AnyPublisher<[WeatherDataDBEntity], Error>
+    func getAllWeatherRecords() -> AnyPublisher<[WeatherRecord], Error>
 }
 
 class WeatherRecordsRepositoryImpl: WeatherRecordsRepository {
+
     let realm: CombineDatabase = CombineDatabaseImpl(databaseSchemaVersion: 1)
     private var subscriptions: Set<AnyCancellable> = []
     private var service: WeatherService
@@ -34,25 +32,31 @@ class WeatherRecordsRepositoryImpl: WeatherRecordsRepository {
         self.service = service
         Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateWeatherRecords), userInfo: nil, repeats: true)
     }
-    
-    func getAllWeatherRecords() -> AnyPublisher<[WeatherDataDBEntity], Error> {
-        realm.getAll(WeatherDataDBEntity.self).flatMap(receiveOutput: { collection in
-                    Publishers.MergeMany(collection.map { entity in
-                        if (entity.date - Date()) > 120 {
-                            self.getWeatherBy(coordinates: entity.coordinates)
-                        }
-                    }).eraseToAnyPublisher()
-                }).eraseToAnyPublisher()
+
+    func getAllWeatherRecords() -> AnyPublisher<[WeatherRecord], Error> {
+        return realm.getAll(WeatherDataDBEntity.self)
+            .map { Array($0) }
+            .flatMap { (entities: [WeatherDataDBEntity]) in
+                Publishers.MergeMany(
+                    entities.map { (entity: WeatherDataDBEntity) in
+                        self.getWeatherBy(coordinates: entity.coordinates)
+                    }
+                )
+                .collect()
+                .eraseToAnyPublisher()
+            }
+            .map { $0 }
+            .eraseToAnyPublisher()
     }
 
-    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> AnyPublisher<WeatherRecord, ServiceError> {
+    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> AnyPublisher<WeatherRecord, Error> {
         service.getWeatherBy(coordinates: coordinates).handleEvents(receiveOutput: { value in
             self.addWeatherRecord(record: value)
         })
         .eraseToAnyPublisher()
     }
 
-    func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, ServiceError> {
+    func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, Error> {
         return service.getWeatherBy(city: city).handleEvents(receiveOutput: { record in
             self.addWeatherRecord(record: record)
         })
