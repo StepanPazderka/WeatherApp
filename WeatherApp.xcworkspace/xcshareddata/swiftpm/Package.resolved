@@ -41,9 +41,9 @@
         "package": "SYNDataSources",
         "repositoryURL": "git@gitlab.com:synetech/public/ios/syndatasources.git",
         "state": {
-          "branch": null,
-          "revision": "6ba49f9d16b9a8a8cf1f750336a5908dd148ab81",
-          "version": "0.1.1"
+          "branch": "combineRealmDatabase",
+          "revision": "2cd4d0fa16633304ef807e34e8c4ac189a905468",
+          "version": null
         }
       }
     ]

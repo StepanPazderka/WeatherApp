@@ -38,8 +38,8 @@ protocol WeatherService {
     var OpenWeatherAPIkey: String? { get }
     func getCountryCodeBy(longitude: Double, latitude: Double) -> Future<String, ServiceError>
     func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, ServiceError>
-    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> Deferred<Future<WeatherRecord, ServiceError>>
-    func getAllCachedData() -> Observable<[WeatherDataDBEntity]>
+    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> AnyPublisher<WeatherRecord, ServiceError>
+    func getAllCachedData() -> AnyPublisher<[WeatherDataDBEntity], Error>
 }
 
 class WeatherServiceImpl: WeatherService {
@@ -68,7 +68,7 @@ class WeatherServiceImpl: WeatherService {
         self.cache = cache
     }
 
-    func getAllCachedData() -> Observable<[WeatherDataDBEntity]> {
+    func getAllCachedData() -> AnyPublisher<[WeatherDataDBEntity], Error> {
         self.cache.getAll()
     }
     
@@ -154,7 +154,7 @@ class WeatherServiceImpl: WeatherService {
         .eraseToAnyPublisher()
     }
 
-    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> Deferred<Future<WeatherRecord, ServiceError>> {
+    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> AnyPublisher<WeatherRecord, ServiceError> {
         return Deferred {
             Future<WeatherRecord, ServiceError> { promise in
                 guard let APIkey = self.OpenWeatherAPIkey else { return promise(.failure(.noAPIkeyprovided)) }
@@ -186,7 +186,7 @@ class WeatherServiceImpl: WeatherService {
                     }
                 }
             }
-        }
+        }.eraseToAnyPublisher()
     }
 
     func GetFlagCodeToEmoji(country: String) -> String {

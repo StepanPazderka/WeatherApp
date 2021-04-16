@@ -8,32 +8,38 @@
 import Foundation
 import Combine
 import MapKit
-//import RxSwift
-//
-//class MockWeatherService: WeatherService {
-//    var records: [WeatherRecord] = []
-//    var OpenWeatherAPIkey: String?
-//    
-//    func getCountryCodeBy(longitude: Double, latitude: Double) -> Future<String, ServiceError> {
-//        
-//    }
-//    
-//    func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, ServiceError> {
-//        let city = city.reformated
-//        let newWeatherRecord: WeatherRecord!
-//        return AnyPublisher<WeatherRecord, ServiceError> {
-//            if city == "prague" {
-//                newWeatherRecord = WeatherRecord(temperature: 2.0, date: Date(), coordinates: CLLocationCoordinate2D(latitude: 50.073658, longitude: 14.418540), distance: 0.0, flag: "CZ")
-//            }
-//        }
-//    }
-//    
-//    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> Deferred<Future<WeatherRecord, ServiceError>> {
-//        
-//    }
-//    
-//    func getAllCachedData() -> Observable<[WeatherDataDBEntity]> {
-//    }
-//    
-//    
-//}
+import RxSwift
+
+class MockWeatherService: WeatherService {
+    var records: [WeatherRecord] = []
+    var OpenWeatherAPIkey: String?
+    
+    func getCountryCodeBy(longitude: Double, latitude: Double) -> Future<String, ServiceError> {
+        Future<String, ServiceError> { promise in
+            promise(.success("CZ"))
+        }
+    }
+    
+    func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, ServiceError> {
+        Deferred {
+            Future<WeatherRecord, ServiceError> { promise in
+                let newRecord = WeatherRecord(temperature: 0, date: Date(), coordinates: CLLocationCoordinate2D(latitude: 0, longitude: 0), distance: 10, flag: "CZ")
+                promise(.success(newRecord))
+            }
+        }.eraseToAnyPublisher()
+    }
+    
+    func getWeatherBy(coordinates: CLLocationCoordinate2D) -> AnyPublisher<WeatherRecord, ServiceError> {
+        Deferred {
+            Future<WeatherRecord, ServiceError> { promise in
+                let newRecord = WeatherRecord(temperature: 0, date: Date(), coordinates: CLLocationCoordinate2D(latitude: 0, longitude: 0), distance: 10, flag: "CZ")
+                promise(.success(newRecord))
+            }
+        }.eraseToAnyPublisher()
+    }
+    
+    func getAllCachedData() -> AnyPublisher<[WeatherDataDBEntity], Error> {
+        let origArray: [WeatherDataDBEntity] = []
+        return Result<[WeatherDataDBEntity], Error>.Publisher(origArray).eraseToAnyPublisher()
+    }
+}

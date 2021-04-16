@@ -20,11 +20,23 @@ class CalculateCurrentLocationWeatherUseCase {
     init(repository: WeatherRecordsRepository) {
         self.repository = repository
 //        self.records = [WeatherRecord]()
-        repository.getAllWeatherRecords().subscribe(onNext: { returnedRecords in
-            self.records = returnedRecords.map { recordFromService in
-                return WeatherRecord(data: recordFromService)
+//        repository.getAllWeatherRecords().subscribe(onNext: { returnedRecords in
+//            self.records = returnedRecords.map { recordFromService in
+//                return WeatherRecord(data: recordFromService)
+//            }
+//        }).disposed(by: disposeBag)
+        repository.getAllWeatherRecords().sink(receiveCompletion: { result in
+            switch result {
+            case .finished:
+                break
+            case .failure(let error):
+                print(error)
             }
-        }).disposed(by: disposeBag)
+        }, receiveValue: { value in
+            self.records = value.map { entry in
+                WeatherRecord(data: entry)
+            }
+        }).store(in: &self.subscriptions)
     }
 
     func calculateTemperatureForCurrentLocation(currentCoordinates: CLLocationCoordinate2D) -> AnyPublisher<Float, Error> {

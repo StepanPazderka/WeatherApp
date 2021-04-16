@@ -8,7 +8,10 @@
 import Foundation
 import Combine
 import MapKit
+import Realm
+import RealmSwift
 import RxSwift
+import CombineDatabase
 
 protocol WeatherRecordsRepository {
     var records: [WeatherRecord] { get set }
@@ -17,21 +20,29 @@ protocol WeatherRecordsRepository {
     func getWeatherBy(city: String) -> AnyPublisher<WeatherRecord, ServiceError>
     func addWeatherRecord(record: WeatherRecord)
     func updateWeatherRecords()
-    func getAllWeatherRecords() -> Observable<[WeatherDataDBEntity]>
+    func getAllWeatherRecords() -> AnyPublisher<[WeatherDataDBEntity], Error>
 }
 
 class WeatherRecordsRepositoryImpl: WeatherRecordsRepository {
+    let realm: CombineDatabase = CombineDatabaseImpl(databaseSchemaVersion: 1)
     private var subscriptions: Set<AnyCancellable> = []
     private var service: WeatherService
     var records: [WeatherRecord] = []
+//    let realm = try! Realm()
 
     init(service: WeatherService) {
         self.service = service
         Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateWeatherRecords), userInfo: nil, repeats: true)
     }
     
-    func getAllWeatherRecords() -> Observable<[WeatherDataDBEntity]> {
-        service.getAllCachedData()
+    func getAllWeatherRecords() -> AnyPublisher<[WeatherDataDBEntity], Error> {
+        realm.getAll(WeatherDataDBEntity.self).flatMap(receiveOutput: { collection in
+                    Publishers.MergeMany(collection.map { entity in
+                        if (entity.date - Date()) > 120 {
+                            self.getWeatherBy(coordinates: entity.coordinates)
+                        }
+                    }).eraseToAnyPublisher()
+                }).eraseToAnyPublisher()
     }
 
     func getWeatherBy(coordinates: CLLocationCoordinate2D) -> AnyPublisher<WeatherRecord, ServiceError> {
@@ -75,15 +86,15 @@ class WeatherRecordsRepositoryImpl: WeatherRecordsRepository {
     }
 
     @objc func updateWeatherRecords() {
-        service.getAllCachedData().subscribe(onNext: { records in
-            records.filter({ entity in
-                if (entity.date - Date()) > 120 {
-                    return true
-                }
-                return false
-            }).forEach { entity in
-                self.service.getWeatherBy(coordinates: entity.coordinates).sink(receiveCompletion: { _ in }, receiveValue: { _ in }).store(in: &self.subscriptions)
-            }
-        }).dispose()
+//        service.getAllCachedData().subscribe(onNext: { records in
+//            records.filter({ entity in
+//                if (entity.date - Date()) > 120 {
+//                    return true
+//                }
+//                return false
+//            }).forEach { entity in
+//                self.service.getWeatherBy(coordinates: entity.coordinates).sink(receiveCompletion: { _ in }, receiveValue: { _ in }).store(in: &self.subscriptions)
+//            }
+//        }).dispose()
     }
 }

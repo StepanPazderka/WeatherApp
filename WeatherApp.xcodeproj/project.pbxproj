@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7F07941E262988CD00836FEE /* SYNCombineDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 7F07941D262988CD00836FEE /* SYNCombineDatabase */; };
 		7F2D5DBC2627E02400E4CE49 /* MockWeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F2D5DBB2627E02400E4CE49 /* MockWeatherService.swift */; };
 		7F558796261F48D900AFA7E5 /* String+reformat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F558795261F48D900AFA7E5 /* String+reformat.swift */; };
 		7F5587A5261F849E00AFA7E5 /* R.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F5587A4261F849E00AFA7E5 /* R.generated.swift */; };
@@ -38,7 +39,6 @@
 		AA934DE12570F78B00E2796A /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA934DE02570F78B00E2796A /* WeatherService.swift */; };
 		AA93F7AA25792DE60039D7A9 /* CLLocation+Distance.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA93F7A925792DE60039D7A9 /* CLLocation+Distance.swift */; };
 		AAD12CBB257726E400EB7F1A /* Double+Truncate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD12CBA257726E000EB7F1A /* Double+Truncate.swift */; };
-		BB43B7AD26285F0C00671FD4 /* SYNDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = BB43B7AC26285F0C00671FD4 /* SYNDatabase */; };
 		BB43B7B026285F6F00671FD4 /* key.txt in Resources */ = {isa = PBXBuildFile; fileRef = BB43B7AF26285F6F00671FD4 /* key.txt */; };
 		BB43B7DB262862D400671FD4 /* Publishers.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB43B7DA262862D400671FD4 /* Publishers.swift */; };
 		BB43B832262869C800671FD4 /* WeatherAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB43B831262869C800671FD4 /* WeatherAppTests.swift */; };
@@ -109,7 +109,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB43B7AD26285F0C00671FD4 /* SYNDatabase in Frameworks */,
+				7F07941E262988CD00836FEE /* SYNCombineDatabase in Frameworks */,
 				A62B6F64F709A82609A71DB6 /* Pods_WeatherApp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -331,7 +331,7 @@
 			);
 			name = WeatherApp;
 			packageProductDependencies = (
-				BB43B7AC26285F0C00671FD4 /* SYNDatabase */,
+				7F07941D262988CD00836FEE /* SYNCombineDatabase */,
 			);
 			productName = WeatherApp;
 			productReference = AA158B1B256FCD790055F55F /* WeatherApp.app */;
@@ -383,7 +383,7 @@
 			);
 			mainGroup = AA158B12256FCD790055F55F;
 			packageReferences = (
-				BB43B7AB26285F0C00671FD4 /* XCRemoteSwiftPackageReference "syndatasources" */,
+				7F07941C262988CD00836FEE /* XCRemoteSwiftPackageReference "syndatasources" */,
 			);
 			productRefGroup = AA158B1C256FCD790055F55F /* Products */;
 			projectDirPath = "";
@@ -785,21 +785,21 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		BB43B7AB26285F0C00671FD4 /* XCRemoteSwiftPackageReference "syndatasources" */ = {
+		7F07941C262988CD00836FEE /* XCRemoteSwiftPackageReference "syndatasources" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "git@gitlab.com:synetech/public/ios/syndatasources.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.1;
+				branch = combineRealmDatabase;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BB43B7AC26285F0C00671FD4 /* SYNDatabase */ = {
+		7F07941D262988CD00836FEE /* SYNCombineDatabase */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BB43B7AB26285F0C00671FD4 /* XCRemoteSwiftPackageReference "syndatasources" */;
-			productName = SYNDatabase;
+			package = 7F07941C262988CD00836FEE /* XCRemoteSwiftPackageReference "syndatasources" */;
+			productName = SYNCombineDatabase;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
