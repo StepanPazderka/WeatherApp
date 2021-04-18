@@ -38,12 +38,17 @@ class WeatherRecordsRepositoryImpl: WeatherRecordsRepository {
             .map { Array($0) }
             .flatMap { (entities: [WeatherDataDBEntity]) in
                 Publishers.MergeMany(
-                    entities.map { (entity: WeatherDataDBEntity) in
+                    entities.filter{ entity in
+                        if (entity.date - Date()) > 120 {
+                            return true
+                        } else {
+                            return false
+                        }
+                    }.map { (entity: WeatherDataDBEntity) in
                         self.getWeatherBy(coordinates: entity.coordinates)
                     }
                 )
                 .collect()
-                .eraseToAnyPublisher()
             }
             .map { $0 }
             .eraseToAnyPublisher()

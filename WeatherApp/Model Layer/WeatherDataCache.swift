@@ -24,7 +24,6 @@ class WeatherDataCache {
     private var cache: [WeatherDataAPIEntity] = [WeatherDataAPIEntity]()
 //    let realmDbSyn: Database = RealmDatabaseImpl(databaseSchemaVersion: 1)
     let disposeBag = DisposeBag()
-//    let realm: CombineDatabase!
     
     fileprivate func fetchCacheFromUserdefaults() {
         if let encodedWeatherDataArray = UserDefaults.standard.object(forKey: "cache") as? Data {
@@ -45,19 +44,13 @@ class WeatherDataCache {
     }
 
     public func add(_ e: WeatherDataAPIEntity) {
-        let latitudePredicate = NSPredicate(format: "latitude == %f", e.coord!.lat as Double)
-        let longitudePredicate = NSPredicate(format: "longitude == %f", e.coord!.lon as Double)
-        let compoundPredicate = NSCompoundPredicate(type: .and , subpredicates: [latitudePredicate, longitudePredicate])
-        
-//        realmDbSyn.getFirst(WeatherDataDBEntity.self, predicate: compoundPredicate).asSingle().subscribe(onSuccess: { entry in
-//            print(entry)
-//            self.realmDbSyn.delete(entry).subscribe().dispose()
-//        }).dispose()
-        
         let newDBentry = WeatherDataDBEntity(from: e)
-//        realmDbSyn.add(newDBentry).subscribe(onCompleted: {
-//            print(newDBentry)
-//        }).dispose()
+        RealmPublishers.from(object: newDBentry).addToRealm()
+    }
+    
+    public func add(_ e: WeatherRecord) {
+        let newRecord2 = WeatherDataDBEntity(from: e)
+        RealmPublishers.from(object: newRecord2).addToRealm()
     }
     
     public func load(by coordinates: CLLocationCoordinate2D) -> WeatherDataDBEntity? {

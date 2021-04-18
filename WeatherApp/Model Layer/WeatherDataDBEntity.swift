@@ -20,7 +20,9 @@ class WeatherDataDBEntity: Object, WeatherDataEntity {
     @objc dynamic var flag: String = String()
     
     var coordinates: CLLocationCoordinate2D {
-        return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        get {
+            return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        }
     }
     
     func getID() {
@@ -36,7 +38,7 @@ class WeatherDataDBEntity: Object, WeatherDataEntity {
         self.temp = entity.temp
         self.latitude = entity.coordinates.latitude
         self.longitude = entity.coordinates.longitude
-        self.date = entity.date
+        self.date = Date()
         self.flag = entity.flag
         getID()
     }
@@ -46,9 +48,16 @@ class WeatherDataDBEntity: Object, WeatherDataEntity {
         self.temp = entity.temp
         self.latitude = entity.coordinates.latitude
         self.longitude = entity.coordinates.longitude
-        self.date = entity.date
+        self.date = Date()
         self.flag = entity.flag
         getID()
+    }
+    
+    init(from record: WeatherRecord) {
+        self.temp = record.temperature
+        self.latitude = record.coordinates.latitude
+        self.longitude = record.coordinates.longitude
+        self.date = record.date
     }
     
     required init() {

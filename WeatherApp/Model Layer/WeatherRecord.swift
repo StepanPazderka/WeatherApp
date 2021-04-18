@@ -17,7 +17,7 @@ struct WeatherRecord {
 
     init(data: WeatherDataAPIEntity) {
         self.temperature = Float(data.main!.temp)
-        self.date = data.date
+        self.date = Date()
         self.coordinates = CLLocationCoordinate2D(latitude: data.coord!.lat, longitude: data.coord!.lon)
         self.distance = 0.0
         self.flag = data.sys!.country

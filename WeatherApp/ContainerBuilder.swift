@@ -24,7 +24,7 @@ class ContainerBuilder {
         }
 
         container.register(WeatherService.self) { r in
-            WeatherServiceImpl(cache: r.resolve(WeatherDataCache.self)!)
+            MockWeatherServiceImpl(cache: r.resolve(WeatherDataCache.self)!)
         }
         
         container.register(WeatherRecordsRepository.self) { r in

@@ -12,6 +12,5 @@ import MapKit
 protocol WeatherDataEntity {
     var temp: Float { get }
     var coordinates: CLLocationCoordinate2D { get }
-    var date: Date { get }
     var flag: String { get }
 }

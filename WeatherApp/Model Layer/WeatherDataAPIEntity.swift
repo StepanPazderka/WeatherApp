@@ -50,12 +50,11 @@ struct WeatherDataAPIEntity: Codable {
     let cod: Int?
     let message: String?
     let current: Current?
-    var date: Date = Date()
 }
 
 extension WeatherDataAPIEntity: Equatable {
     static func == (lhs: WeatherDataAPIEntity, rhs: WeatherDataAPIEntity) -> Bool {
-        if (lhs.base == rhs.base) && (lhs.date == rhs.date) {
+        if (lhs.base == rhs.base) && (lhs.coord == rhs.coord) {
             return true
         }
         return false
