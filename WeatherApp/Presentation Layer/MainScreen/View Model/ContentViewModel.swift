@@ -10,7 +10,16 @@ import CoreLocation
 import Combine
 import MapKit
 
-class ContentViewModel: ViewModel {
+protocol ContentViewModel: ViewModel {
+    var MapViewCoords: MKCoordinateRegion { get set }
+    var CurrentLocationTemperature: String { get set }
+    var isAlertRaised: Bool { get set }
+    var alertDescription: String { get set }
+    var currentCity: String { get set }
+    var currentCountryFlag: String { get set }
+}
+
+class ContentViewModelImpl: ViewModel {
     private var subscriptions: Set<AnyCancellable> = []
 
     @Published var MapViewCoords = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 0, longitude: 0), span: MKCoordinateSpan(latitudeDelta: 50, longitudeDelta: 50))

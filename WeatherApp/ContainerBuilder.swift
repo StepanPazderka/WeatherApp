@@ -36,7 +36,11 @@ class ContainerBuilder {
         }
 
         container.register(ContentViewModel.self) { r in
-            ContentViewModel(repository: r.resolve(WeatherRecordsRepository.self)!, useCase: r.resolve(CalculateCurrentLocationWeatherUseCase.self)!)
+            ContentViewModelImpl(repository: r.resolve(WeatherRecordsRepository.self)!, useCase: r.resolve(CalculateCurrentLocationWeatherUseCase.self)!)
+        }
+        
+        container.register(ContentViewModel.self) { _ in
+            ContentViewModelPreviewImpl()
         }
 
         return container

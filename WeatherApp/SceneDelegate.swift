@@ -17,7 +17,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
             let mainRouter = MainRouter()
-            window.rootViewController = UIHostingController(rootView: ContentView(viewModel: mainRouter.container.resolve(ContentViewModel.self)!))
+            window.rootViewController = UIHostingController(rootView: ContentView(viewModel: mainRouter.container.resolve(ContentViewModelImpl.self)!))
             self.window = window
             window.makeKeyAndVisible()
             // TODO: - Zkopirovat reseni z JetYou
