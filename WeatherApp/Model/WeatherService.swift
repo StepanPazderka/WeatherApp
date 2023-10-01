@@ -8,14 +8,14 @@
 import Foundation
 import MapKit
 
-enum ServiceError: Error {
-    case cityNotFound
-    case wrongCoordinates
-    case timeout
-    case unableToComplete
-    case accountBlocked
-    case noAPIkeyprovided
-    case wrongData
+enum ServiceError: String, Error {
+    case cityNotFound = "City not Found"
+    case wrongCoordinates = "Wrong coordinates"
+    case timout = "Request timed out"
+    case unableToComplete = "Unable to complete"
+    case accountBlocked = "Account exceeded usage"
+    case noAPIkeyprovided = "No API key provided"
+    case wrongData = "Data is wrong"
 }
 
 extension ServiceError: LocalizedError {
@@ -156,7 +156,13 @@ class WeatherService: ObservableObject {
 
                 if (decoded.message != nil) {
                     DispatchQueue.main.async {
-                        completion(.failure(ServiceError.unableToComplete))
+                        if let message = decoded.message {
+                            if message.contains("Your account is temporary blocked due to exceeding of requests limitation of your subscription type") {
+                                completion(.failure(ServiceError.accountBlocked))
+                            } else {
+                                completion(.failure(ServiceError.unableToComplete))
+                            }
+                        }
                     }
                 }
             } catch let error as NSError {
